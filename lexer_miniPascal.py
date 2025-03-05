@@ -342,7 +342,7 @@ def t_IMPLEMENTATION(t):
 # -------------------- // --------------------------------------------------------------
 
 def t_NUMBER(t):
-    r'\d+(\.\d+)?'
+    r'(-)?\d+(\.\d+)?([eE][-+]?\d+)?'
     lexer = t.lexer
     next_char = lexer.lexdata[lexer.lexpos:lexer.lexpos+1]
 
@@ -399,6 +399,7 @@ if __name__ == "__main__":
         file_name = sys.argv[1]
     else:
         file_name = 'test.pas'
-    file_data = open(file_name, 'r')
-    data_content = file_data.read().replace(" ", "")
+    with open(file_name, 'r') as file_data:
+        data_content = file_data.read()
+    # data_content = file_data.read().replace(" ", "")
     execute_test(data_content, lexer_instance)
