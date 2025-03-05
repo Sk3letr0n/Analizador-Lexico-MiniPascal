@@ -10,7 +10,7 @@ tokens = (
     'FORWARD', 'GOTO', 'IMPLEMENTATION', 'INLINE', 'INTERRUPT', 'MOD', 'PACKED','RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN',
 
     # SIMBOLOS
-    'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR','ASSIGN','DOT','COMMA', 'SEMICOLON','COLON', 
+    'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON', 
 
     # IDENTIFICADOR
     'ID',
@@ -72,8 +72,10 @@ t_LE = r'<='
 t_GE = r'>='
 t_LPAR = r'\('
 t_RPAR = r'\)'
-t_LBR = r'\['
-t_RBR = r'\]'
+t_LBR = r'\{'
+t_RBR = r'\}'
+t_LBLO = r'\['
+t_RBLO = r'\]'
 t_ASSIGN = r':='
 t_RANGE = r'\.\.'
 t_DOT = r'\.'
