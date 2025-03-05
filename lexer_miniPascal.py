@@ -409,6 +409,5 @@ if __name__ == "__main__":
     else:
         file_name = 'test.pas'
     with open(file_name, 'r') as file_data:
-        data_content = file_data.read()
-    # data_content = file_data.read().replace(" ", "")
+        data_content = file_data.read().replace(" ", "")
     execute_test(data_content, lexer_instance)

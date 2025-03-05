@@ -5,5 +5,5 @@ var
 begin
   a := 10;
   b := 20;
-  WriteLn('a: ', a, ', b: ', b);
+  writeln('a: ', a, ', b: ', b);
 end.
