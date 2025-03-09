@@ -346,41 +346,16 @@ def t_IMPLEMENTATION(t):
 # -------------------- // --------------------------------------------------------------
 
 def t_NUMBER(t):
-    r'(-)?\d+(\.\d+([eE][-+]?\d+)?)?'
+    r'(-)?\d+(\.\d+)?([eE][-+]?\d+)?'
     lexer = t.lexer
-    pos = lexer.lexpos
-    lexdata = lexer.lexdata  # Texto completo del código fuente
-    original_value = t.value  # Guardamos el número antes de validarlo
+    next_char = lexer.lexdata[lexer.lexpos:lexer.lexpos+1]
 
-    # Obtener el resto de la cadena para verificar errores
-    remaining = lexdata[pos:]
-
-    # Verificar si el número es seguido de un segundo punto decimal
-    if "." in remaining and remaining.split('.')[1][0].isdigit():
-        error_token = original_value
-        i = 0
-        while i < len(remaining) and (remaining[i].isdigit() or remaining[i] == '.'):
-            error_token += remaining[i]
-            i += 1
-        # Obtener el siguiente carácter después del número
-        next_char = lexdata[pos:pos+1]
-
-        # Si el siguiente carácter es una letra o '_', es un error léxico (ejemplo: "2variable")
-        if next_char.isalpha() or next_char == "_":
-            invalid_token = original_value  # Guarda la parte del número ya reconocida
-            while pos < len(lexdata) and (lexdata[pos].isalnum() or lexdata[pos] == "_"):
-                invalid_token += lexdata[pos]
-                pos += 1
-
-            print(f'Error léxico: "{invalid_token}" no es válido')
-            lexer.skip(len(invalid_token))  # Saltar todo el token inválido
-            return
-        print(f'Error léxico: "{error_token}" no es un número válido')
-        lexer.skip(len(error_token))
+    if next_char.isalpha() or next_char == "_":
+        print(f'error lexico: {t.value}{next_char} no es valido')
+        lexer.skip(len(t.value)+1)
         return
-
-    # Convertir a float o int
-    t.value = float(original_value) if '.' in original_value or 'e' in original_value.lower() else int(original_value)
+    
+    t.value = float(t.value) if '.' in t.value else int(t.value)
     return t
 
 
