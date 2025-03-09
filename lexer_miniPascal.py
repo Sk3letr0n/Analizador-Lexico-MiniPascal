@@ -17,6 +17,9 @@ tokens = (
 
     # NUMEROS
     'NUMBER',
+
+    # STRING
+    'STRING_LITERAL',
 )
 
 reserved = {
@@ -64,24 +67,24 @@ t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
 t_DIVISION = r'/'
-t_EQ = r'='
-t_NE = r'<>'
-t_LT = r'<'
-t_GT = r'>'
-t_LE = r'<='
-t_GE = r'>='
+t_EQ = r'\='
+t_NE = r'\<\>'
+t_LT = r'\<'
+t_GT = r'\>'
+t_LE = r'\<\='
+t_GE = r'\>\='
 t_LPAR = r'\('
 t_RPAR = r'\)'
 t_LBR = r'\{'
 t_RBR = r'\}'
 t_LBLO = r'\['
 t_RBLO = r'\]'
-t_ASSIGN = r':='
+t_ASSIGN = r'\:\='
 t_RANGE = r'\.\.'
 t_DOT = r'\.'
-t_COMMA = r','
-t_SEMICOLON = r';'
-t_COLON = r':'
+t_COMMA = r'\,'
+t_SEMICOLON = r'\;'
+t_COLON = r'\:'
 
 t_ignore = " \t"
 
@@ -217,7 +220,6 @@ def t_IF(t):
 def t_THEN(t):
     r'THEN'
     return t
-
 
 def t_INTERFACE(t):
     r'INTERFACE'
@@ -382,6 +384,11 @@ def t_NUMBER(t):
     return t
 
 
+def t_STRING_LITERAL(t):
+    r'\"([^\\\n]|(\\.))*?\"|\'([^\\\n]|(\\.))*?\''
+    t.value = t.value[1:-1]  # Elimina comillas
+    return t
+
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -418,7 +425,6 @@ def t_invalid_combination(t):
     print(f"Error léxico: combinación inválida '{t.value}' en la línea {t.lineno}")
     t.lexer.skip(len(t.value))  # Salta el token inválido
 
-
 # Crear el analizador léxico
 lexer_instance = lexer_lib.lex()
 
@@ -428,6 +434,5 @@ if __name__ == "__main__":
     else:
         file_name = 'test.pas'
     with open(file_name, 'r') as file_data:
-        data_content = file_data.read()
-    # data_content = file_data.read().replace(" ", "")
+        data_content = file_data.read().replace(" ", "")
     execute_test(data_content, lexer_instance)
