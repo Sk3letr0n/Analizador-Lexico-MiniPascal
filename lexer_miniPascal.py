@@ -91,7 +91,7 @@ t_COLON = r'\:'
 t_ignore = " \t"
 
 # Ignorar comentarios
-t_ignore_comment = r'\(\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*?\*+\)|{[^{]*}'
+t_ignore_comment = r'\(\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*?\*+\)|{[^{]*}|//.*'
 
 # Funciones para palabras reservadas
 def t_PROGRAM(t):

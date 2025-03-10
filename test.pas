@@ -1,23 +1,9 @@
-program project1;
-const
-  y = '*';
-
-var
-  i, x : byte;
- 
-  procedure writeln_n_times(x : char; n : byte);
-  var
-    i : byte;
-  begin
-    for i := 1 to n do
-      write(x);
-    writeln('hola');
-  end;
-
-begin
-  write('Ievadiet veselu skaitli: ');
-  readln(x);
-
-  for i := x downto 1 do
-    writeln_n_times(y, i);
-end.
+PROGRAM Comentarios;
+{ Este es un comentario de varias líneas
+  que el analizador léxico debe ignorar. }
+VAR
+    x: INTEGER; // Este es un comentario de una línea
+BEGIN
+    x := 42;
+    WRITELN('El valor de x es: ', x);
+END.
