@@ -1,9 +1,23 @@
-program DeclaracionVariables;
+program project1;
+const
+  y = '*';
+
 var
-  a, b: Integer;
+  i, x : byte;
+ 
+  procedure writeln_n_times(x : char; n : byte);
+  var
+    i : byte;
+  begin
+    for i := 1 to n do
+      write(x);
+    writeln('hola');
+  end;
 
 begin
-  a := 10;
-  b := 20;
-  writeln('a: ', a, ', b: ', b);
+  write('Ievadiet veselu skaitli: ');
+  readln(x);
+
+  for i := x downto 1 do
+    writeln_n_times(y, i);
 end.

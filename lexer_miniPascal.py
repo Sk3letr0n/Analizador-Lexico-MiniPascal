@@ -7,7 +7,7 @@ tokens = (
     'ABSOLUTE', 'AND', 'ARRAY', 'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITE', 'READ', 'IF', 'THEN', 'ELSE', 'WHILE',
     'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'ASM', 'CASE', 'DESTRUCTOR', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'LABEL', 'NIL', 'OBJECT', 'PRIVATE', 'REPEAT', 'SHL', 'STRING','TO', 'UNIT', 'USES', 'VIRTUAL', 'WITH', 'CONSTRUCTOR', 'EXTERNAL', 'FILE',
-    'FORWARD', 'GOTO', 'IMPLEMENTATION', 'INLINE', 'INTERRUPT', 'MOD', 'PACKED','RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN',
+    'FORWARD', 'GOTO', 'IMPLEMENTATION', 'INLINE', 'INTERRUPT', 'MOD', 'PACKED','RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
 
     # SIMBOLOS
     'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON', 
@@ -20,46 +20,48 @@ tokens = (
 
     # STRING
     'STRING_LITERAL',
+
+    'CHARACTER_LITERAL',
 )
 
 reserved = {
-    'PROGRAM': 'PROGRAM',
-    'VAR': 'VAR',
-    'INTEGER': 'INTEGER',
-    'REAL': 'REAL',
-    'CHAR': 'CHAR',
-    'BOOLEAN': 'BOOLEAN',
-    'ARRAY': 'ARRAY',
-    'OF': 'OF',
-    'BEGIN': 'BEGIN',
-    'END': 'END',
-    'IF': 'IF',
-    'THEN': 'THEN',
-    'ELSE': 'ELSE',
-    'WHILE': 'WHILE',
-    'DO': 'DO',
-    'FOR': 'FOR',
-    'TO': 'TO',
-    'READ': 'READ',
-    'WRITE': 'WRITE',
-    'NOT': 'NOT',
-    'AND': 'AND',
-    'OR': 'OR',
-    'DIV': 'DIV',
-    'MOD': 'MOD',
-    'TRUE': 'TRUE',
-    'FALSE': 'FALSE',
-    'CASE': 'CASE',
-    'RECORD': 'RECORD',
-    'FUNCTION': 'FUNCTION',
-    'PROCEDURE': 'PROCEDURE',
-    'CONST': 'CONST',
-    'TYPE': 'TYPE',
-    'WITH': 'WITH',
-    'NIL': 'NIL',
-    'RETURN': 'RETURN',
+    'program': 'PROGRAM',
+    'var': 'VAR',
+    'integer': 'INTEGER',
+    'real': 'REAL',
+    'char': 'CHAR',
+    'byte': 'BYTE',
+    'boolean': 'BOOLEAN',
+    'array': 'ARRAY',
+    'of': 'OF',
+    'begin': 'BEGIN',
+    'end': 'END',
+    'if': 'IF',
+    'then': 'THEN',
+    'else': 'ELSE',
+    'while': 'WHILE',
+    'do': 'DO',
+    'for': 'FOR',
+    'to': 'TO',
+    'read': 'READ',
+    'write': 'WRITE',
+    'not': 'NOT',
+    'and': 'AND',
+    'or': 'OR',
+    'div': 'DIV',
+    'mod': 'MOD',
+    'true': 'TRUE',
+    'false': 'FALSE',
+    'case': 'CASE',
+    'record': 'RECORD',
+    'function': 'FUNCTION',
+    'procedure': 'PROCEDURE',
+    'const': 'CONST',
+    'type': 'TYPE',
+    'with': 'WITH',
+    'nil': 'NIL',
+    'return': 'RETURN',
 }
-
 
 # Definir reglas de los tokens
 t_CHARCONST = r'\'[^\']*\'|"[^"]*"'
@@ -93,314 +95,285 @@ t_ignore_comment = r'\(\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*?\*+\)|{[^{]*}'
 
 # Funciones para palabras reservadas
 def t_PROGRAM(t):
-    r'PROGRAM'
+    r'program\b'
     return t
 
 def t_REAL(t):
-    r'real'
+    r'real\b'
     return t
 
 def t_FOR(t):
-    r'FOR'
+    r'for\b'
     return t
 
 def t_VAR(t):
-    r'VAR'
+    r'var\b'
     return t
 
 def t_ARRAY(t):
-    r'ARRAY'
+    r'array\b'
     return t
 
 def t_OF(t):
-    r'OF'
+    r'of\b'
     return t
 
 def t_PROCEDURE(t):
-    r'PROCEDURE'
+    r'procedure\b'
     return t
 
 def t_BEGIN(t):
-    r'BEGIN'
+    r'begin\b'
     return t
 
 def t_WRITE(t):
-    r'WRITE'
+    r'write\b'
     return t
 
 def t_READ(t):
-    r'READ'
+    r'read\b'
     return t
 
 def t_WHILE(t):
-    r'WHILE'
+    r'while\b'
     return t
 
 def t_DOWNTO(t):
-    r'DOWNTO'
+    r'downto\b'
     return t
 
 def t_DO(t):
-    r'DO'
+    r'do\b'
     return t
 
 def t_NOT(t):
-    r'NOT'
+    r'not\b'
     return t
 
 def t_OR(t):
-    r'OR'
+    r'or\b'
     return t
 
 def t_DIV(t):
-    r'DIV'
+    r'div\b'
     return t
 
 def t_AND(t):
-    r'AND'
+    r'and\b'
     return t
 
-
 def t_ELSE(t):
-    r'ELSE'
+    r'else\b'
     return t
 
 def t_END(t):
-    r'END'
+    r'end\b'
     return t
 
 def t_ABSOLUTE(t):
-    r'ABSOLUTE'
+    r'absolute\b'
     return t
 
 def t_ASM(t):
-    r'ASM'
+    r'asm\b'
     return t
 
 def t_CASE(t):
-    r'CASE'
+    r'case\b'
     return t
 
 def t_DESTRUCTOR(t):
-    r'DESTRUCTOR'
+    r'destructor\b'
     return t
 
 def t_CONST(t):
-    r'CONST'
+    r'const\b'
     return t
 
 def t_TYPE(t):
-    r'TYPE'
+    r'type\b'
     return t
 
 def t_INTEGER(t):
-    r'integer'
+    r'integer\b'
     return t
 
 def t_BOOLEAN(t):
-    r'boolean'
+    r'boolean\b'
     return t
 
 def t_CHAR(t):
-    r'char'
+    r'char\b'
+    return t
+
+def t_BYTE(t):
+    r'byte\b'
     return t
 
 def t_TRUE(t):
-    r'TRUE'
+    r'true\b'
     return t
 
 def t_FALSE(t):
-    r'FALSE'
+    r'false\b'
     return t
 
 def t_IF(t):
-    r'IF'
+    r'if\b'
     return t
 
 def t_THEN(t):
-    r'THEN'
+    r'then\b'
     return t
 
 def t_INTERFACE(t):
-    r'INTERFACE'
+    r'interface\b'
     return t
 
 def t_LABEL(t):
-    r'LABEL'
+    r'label\b'
     return t
 
 def t_NIL(t):
-    r'NIL'
+    r'nil\b'
     return t
 
 def t_OBJECT(t):
-    r'OBJECT'
+    r'object\b'
     return t
 
 def t_PRIVATE(t):
-    r'PRIVATE'
+    r'private\b'
     return t
 
 def t_REPEAT(t):
-    r'REPEAT'
+    r'repeat\b'
     return t
 
 def t_SHL(t):
-    r'SHL'
+    r'shl\b'
     return t
 
 def t_STRING(t):
-    r'STRING'
+    r'string\b'
     return t
 
 def t_TO(t):
-    r'TO'
+    r'to\b'
     return t
 
-
 def t_INLINE(t):
-    r'INLINE'
+    r'inline\b'
     return t
 
 def t_INTERRUPT(t):
-    r'INTERRUPT'
+    r'interrupt\b'
     return t
 
 def t_MOD(t):
-    r'MOD'
+    r'mod\b'
     return t
 
 def t_PACKED(t):
-    r'PACKED'
+    r'packed\b'
     return t
 
 def t_RECORD(t):
-    r'RECORD'
+    r'record\b'
     return t
 
 def t_SET(t):
-    r'SET'
+    r'set\b'
     return t
 
 def t_SHR(t):
-    r'SHR'
+    r'shr\b'
     return t
 
 def t_UNTIL(t):
-    r'UNTIL'
+    r'until\b'
     return t
 
 def t_XOR(t):
-    r'XOR'
+    r'xor\b'
     return t
 
 def t_UNIT(t):
-    r'UNIT'
+    r'unit\b'
     return t
 
 def t_USES(t):
-    r'USES'
+    r'uses\b'
     return t
 
 def t_VIRTUAL(t):
-    r'VIRTUAL'
+    r'virtual\b'
     return t
 
 def t_WITH(t):
-    r'WITH'
+    r'with\b'
     return t
 
 def t_CONSTRUCTOR(t):
-    r'CONSTRUCTOR'
+    r'constructor\b'
     return t
 
 def t_FUNCTION(t):
-    r'FUNCTION'
+    r'function\b'
     return t
 
 def t_IN(t):
-    r'IN'
+    r'in\b'
     return t
 
 def t_EXTERNAL(t):
-    r'EXTERNAL'
+    r'external\b'
     return t
 
 def t_FILE(t):
-    r'FILE'
+    r'file\b'
     return t
 
 def t_FORWARD(t):
-    r'FORWARD'
+    r'forward\b'
     return t
 
 def t_GOTO(t):
-    r'GOTO'
+    r'goto\b'
     return t
 
 def t_IMPLEMENTATION(t):
-    r'IMPLEMENTATION'
+    r'implementation\b'
     return t
-
-
-# -------------------- // --------------------------------------------------------------
 
 def t_NUMBER(t):
     r'\d+(\.\d+)?'    
-    lexer = t.lexer
-    next_char = lexer.lexdata[lexer.lexpos:lexer.lexpos+1]
-
-    if next_char.isalpha() or next_char == "_":
-        print(f'error lexico: {t.value}{next_char} no es valido')
-        lexer.skip(len(t.value)+1)
-        return
-    
     t.value = float(t.value) if '.' in t.value else int(t.value)
     return t
 
-
 def t_STRING_LITERAL(t):
     r'\"([^\\\n]|(\\.))*?\"|\'([^\\\n]|(\\.))*?\''
-    t.value = t.value[1:-1]  # Elimina comillas
+    t.value = t.value[1:-1]
     return t
 
+def t_CHARACTER_LITERAL(t):
+    r'\'([^\\\n]|(\\.))*?\'|\"([^\\\n]|(\\.))*?\"'
+    t.value = t.value[1:-1]
+    return t
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
-    # Verifica si es una palabra reservada
-    if t.value.upper() in reserved:
-        t.type = reserved[t.value.upper()]
-    else:
-        t.type = 'ID'  # Es un identificador normal
+    t.type = reserved.get(t.value.lower(), 'ID')
     return t
 
-# Manejador de nuevas líneas para llevar un seguimiento correcto del número de línea
-def t_newline_token(t):
+def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-# Manejador de errores léxicos
 def t_error(t):
     print(f'Error léxico: {t.value[0]} en la línea {t.lexer.lineno}')
     t.lexer.skip(1)
 
-
-# Probar el análisis léxico
-def execute_test(data, lexer):
-    lexer.input(data)
-    while True:
-        token_found = lexer.token()
-        if not token_found:
-            break
-        print(token_found)
-
-# Manejar la combinación "yTHEN"
-def t_invalid_combination(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*[A-Z]+'
-    print(f"Error léxico: combinación inválida '{t.value}' en la línea {t.lineno}")
-    t.lexer.skip(len(t.value))  # Salta el token inválido
-
-# Crear el analizador léxico
 lexer_instance = lexer_lib.lex()
 
 if __name__ == "__main__":
@@ -409,5 +382,10 @@ if __name__ == "__main__":
     else:
         file_name = 'test.pas'
     with open(file_name, 'r') as file_data:
-        data_content = file_data.read().replace(" ", "")
-    execute_test(data_content, lexer_instance)
+        data_content = file_data.read()
+    lexer_instance.input(data_content)
+    while True:
+        token = lexer_instance.token()
+        if not token:
+            break
+        print(token)
