@@ -1,9 +1,11 @@
-PROGRAM Comentarios;
-{ Este es un comentario de varias líneas
-  que el analizador léxico debe ignorar. }
+PROGRAM Punteros;
+TYPE
+    PunteroEntero = ^INTEGER;
 VAR
-    x: INTEGER; // Este es un comentario de una línea
+    ptr: PunteroEntero;
+    valor: INTEGER;
 BEGIN
-    x := 42;
-    WRITELN('El valor de x es: ', x);
+    valor := 42;
+    ptr := @valor;
+    WRITELN('Valor a través del puntero: ', ptr^);
 END.

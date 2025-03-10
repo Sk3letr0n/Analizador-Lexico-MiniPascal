@@ -8,12 +8,13 @@ tokens = (
     'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'ASM', 'CASE', 'DESTRUCTOR', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'LABEL', 'NIL', 'OBJECT', 'PRIVATE', 'REPEAT', 'SHL', 'STRING','TO', 'UNIT', 'USES', 'VIRTUAL', 'WITH', 'CONSTRUCTOR', 'EXTERNAL', 'FILE',
     'FORWARD', 'GOTO', 'IMPLEMENTATION', 'INLINE', 'INTERRUPT', 'MOD', 'PACKED','RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
+    'NEW', 'MEMORY_ADDRESS', 'STORED_VALUE',
 
     # SIMBOLOS
     'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON', 
 
     # IDENTIFICADOR
-    'ID',
+    'ID', 'POINTER'
 
     # NUMEROS
     'NUMBER',
@@ -25,6 +26,7 @@ tokens = (
 )
 
 reserved = {
+    'New': 'MEMORY ALLOCATION',
     'program': 'PROGRAM',
     'var': 'VAR',
     'integer': 'INTEGER',
@@ -364,6 +366,13 @@ def t_CHARACTER_LITERAL(t):
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value.lower(), 'ID')
+    return t
+
+
+
+def t_MEMORY_ADDRESS(t):
+    r'@[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = 'MEMORY_ADDRESS'
     return t
 
 def t_newline(t):
