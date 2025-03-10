@@ -368,7 +368,11 @@ def t_ID(t):
     t.type = reserved.get(t.value.lower(), 'ID')
     return t
 
-
+# Símbolo para punteros (^)
+def t_POINTER(t):
+    r'\^[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = 'POINTER'
+    return t
 
 def t_MEMORY_ADDRESS(t):
     r'@[a-zA-Z_][a-zA-Z_0-9]*'
