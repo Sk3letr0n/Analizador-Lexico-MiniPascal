@@ -362,19 +362,16 @@ def t_CHARACTER_LITERAL(t):
     t.value = t.value[1:-1]
     return t
 
-# Identificador seguido de ^ (STORED_VALUE)
 def t_STORED_VALUE(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*\^'
     t.type = 'STORED_VALUE'
     return t
 
-# Identificadores normales (sin ^)
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value.lower(), 'ID')
     return t
 
-# Símbolo para punteros (^)
 def t_POINTER(t):
     r'\^[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = 'POINTER'
