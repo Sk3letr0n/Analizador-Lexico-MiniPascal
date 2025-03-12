@@ -357,11 +357,6 @@ def t_STRING_LITERAL(t):
     t.value = t.value[1:-1]
     return t
 
-def t_CHARACTER_LITERAL(t):
-    r'\'([^\\\n]|(\\.))*?\'|\"([^\\\n]|(\\.))*?\"'
-    t.value = t.value[1:-1]
-    return t
-
 def t_STORED_VALUE(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*\^'
     t.type = 'STORED_VALUE'
