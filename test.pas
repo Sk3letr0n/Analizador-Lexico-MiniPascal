@@ -2,7 +2,7 @@ PROGRAM Punteros;
 TYPE
     PunteroEntero = ^INTEGER;
 VAR
-    ptr: PunteroEntero;
+    2ptr: PunteroEntero;
     valor: INTEGER;
 BEGIN
     valor := 42;

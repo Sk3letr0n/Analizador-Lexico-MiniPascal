@@ -347,7 +347,7 @@ def t_IMPLEMENTATION(t):
     return t
 
 def t_NUMBER(t):
-    r'\d+(\.\d+)?'    
+    r'\d+(\.\d+)?(?!([a-zA-Z]))'    
     t.value = float(t.value) if '.' in t.value else int(t.value)
     return t
 
@@ -381,8 +381,15 @@ def t_newline(t):
     t.lexer.lineno += len(t.value)
 
 def t_error(t):
-    print(f'Error léxico: {t.value[0]} en la línea {t.lexer.lineno}')
-    t.lexer.skip(1)
+    if t.value[0].isdigit():  
+        index = 0
+        while index < len(t.value) and (t.value[index].isalnum() or t.value[index] == '_'):
+            index += 1
+        print(f"Error léxico en línea {t.lineno}: Identificador no válido")
+        t.lexer.skip(index) 
+    else:
+        print(f"Error léxico en línea {t.lineno}: Caracter no reconocido '{t.value[0]}'")
+        t.lexer.skip(1)
 
 lexer_instance = lexer_lib.lex()
 
