@@ -14,7 +14,7 @@ tokens = (
     'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON', 
 
     # IDENTIFICADOR
-    'ID', 'POINTER'
+    'ID', 'POINTER',
 
     # NUMEROS
     'NUMBER',
@@ -22,7 +22,6 @@ tokens = (
     # STRING
     'STRING_LITERAL',
 
-    'CHARACTER_LITERAL',
 )
 
 reserved = {
