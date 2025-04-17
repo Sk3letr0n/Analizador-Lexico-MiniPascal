@@ -4,14 +4,14 @@ import sys
 # Definir tokens como tuplas
 tokens = (
     # PALABRAS RESERVADAS
-    'ABSOLUTE', 'AND', 'ARRAY', 'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITE', 'READ', 'IF', 'THEN', 'ELSE', 'WHILE',
+    'ABSOLUTE', 'AND', 'ARRAY', 'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
     'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'ASM', 'CASE', 'DESTRUCTOR', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'LABEL', 'NIL', 'OBJECT', 'PRIVATE', 'REPEAT', 'SHL', 'STRING','TO', 'UNIT', 'USES', 'VIRTUAL', 'WITH', 'CONSTRUCTOR', 'EXTERNAL', 'FILE',
     'FORWARD', 'GOTO', 'IMPLEMENTATION', 'INLINE', 'INTERRUPT', 'MOD', 'PACKED','RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
     'MEMORY_ADDRESS', 'STORED_VALUE',
 
     # SIMBOLOS
-    'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON', 
+    'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON',
 
     # IDENTIFICADOR
     'ID', 'POINTER',
@@ -43,8 +43,8 @@ reserved = {
     'do': 'DO',
     'for': 'FOR',
     'to': 'TO',
-    'read': 'READ',
-    'write': 'WRITE',
+    'readln': 'READLN',
+    'writeln': 'WRITELN',
     'not': 'NOT',
     'and': 'AND',
     'or': 'OR',
@@ -126,12 +126,12 @@ def t_BEGIN(t):
     r'begin\b'
     return t
 
-def t_WRITE(t):
-    r'write\b'
+def t_WRITELN(t):
+    r'writeln\b'
     return t
 
-def t_READ(t):
-    r'read\b'
+def t_READLN(t):
+    r'readln\b'
     return t
 
 def t_WHILE(t):
