@@ -93,7 +93,6 @@ t_ignore = " \t"
 # Ignorar comentarios
 t_ignore_comment = r'\(\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*?\*+\)|{[^{]*}|//.*'
 
-
 def t_NUMBER(t):
     r'\d+(\.\d+)?(?!([a-zA-Z]))'    
     t.value = float(t.value) if '.' in t.value else int(t.value)
