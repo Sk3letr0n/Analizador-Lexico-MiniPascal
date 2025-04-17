@@ -42,6 +42,18 @@ def p_declaration(p):
     'declaration : id_list COLON type_specifier SEMICOLON'
     p[0] = ('decl', p[1], p[3])
 
+def p_declarations_const(p):
+    'declarations : const_declaration declarations'
+    # Se asegura de que p[2] sea una lista antes de concatenar
+    if isinstance(p[2], list):
+        p[0] = [p[1]] + p[2]
+    else:
+        p[0] = [p[1], p[2]]
+
+def p_declarations_const_single(p):
+    'declarations : const_declaration'
+    p[0] = [p[1]] # Devuelve una lista con un único elemento
+
 # id_list: uno o más identificadores separados por comas.
 def p_id_list_single(p):
     'id_list : ID'
@@ -231,6 +243,14 @@ def p_addop(p):
              | XOR'''
     p[0] = p[1]
     
+def p_factor_charconst(p):
+    'factor : CHARCONST'
+    p[0] = ('charconst', p[1])
+
+def p_const_declaration(p):
+    'const_declaration : CONST ID EQ expression SEMICOLON'
+    p[0] = ('const', p[2], p[4])
+
 def p_factor_not(p):
     'factor : NOT factor'
     p[0] = ('not', p[2])
@@ -351,20 +371,14 @@ parser = yacc.yacc()
 
 if __name__ == '__main__':
     data = """
-    program checkCase;
+    program EjemploCase;
+    const PI = 3.14;
     var
-    grade: char;
+    c: char;
     begin
-    grade := 'a';
-
-    case (grade) of
-        a : writeln('Excellent!' );
-        2 : writeln('Well done' );
-        a12sd : writeln('You passed' );
-        'd' : writeln('Better try again' );
-    end;     
-    
-    writeln('Your grade is  ', grade );
+    c := 'A';
+    writeln('Constante PI: ', PI);
+    writeln('Carácter: ', c);
     end.
     """
     result = parser.parse(data)
