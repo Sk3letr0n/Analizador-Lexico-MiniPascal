@@ -147,6 +147,10 @@ def p_statement_empty(p):
     'statement : empty'
     p[0] = None
 
+def p_statement_case(p):
+    'statement : case_statement'
+    p[0] = p[1]
+
 # Asignación: variable, token de asignación, y expresión.
 def p_assignment_statement(p):
     'assignment_statement : variable ASSIGN expression'
@@ -305,6 +309,24 @@ def p_statement_for(p):
     direction = 'to' if p[5] == 'TO' else 'downto'
     p[0] = ('for', p[2], p[4], direction, p[6], p[8])
 
+def p_case_statement(p):
+    '''case_statement : CASE expression OF case_list END'''
+    p[0] = ('case', p[2], p[4])
+
+def p_case_list(p):
+    '''case_list : case_element case_list
+                 | case_element'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = [p[1]] + p[2]
+
+def p_case_element(p):
+    '''case_element : NUMBER COLON statement SEMICOLON
+                   | STRING_LITERAL COLON statement SEMICOLON
+                   | ID COLON statement SEMICOLON'''
+    p[0] = ('case_element', p[1], p[3])
+
 def p_factor_true(p):
     'factor : TRUE'
     p[0] = ('bool', True)
@@ -329,46 +351,21 @@ parser = yacc.yacc()
 
 if __name__ == '__main__':
     data = """
-    program EjemploCompleto;
+    program checkCase;
+    var
+    grade: char;
+    begin
+    grade := 'a';
 
-var
-  i, total: integer;
-  numeros: array[1..5] of integer;
-
-procedure sumar_elementos(arr: array[1..5] of integer);
-var
-  suma, j: integer;
-begin
-  suma := 0;
-  j := 1;
-  while j <= 5 do
-  begin
-    suma := suma + arr[j];
-    j := j + 1;
-  end;
-  writeln('La suma de los elementos es: ', suma);
-end;
-
-begin
-  i := 1;
-  while i <= 5 do
-  begin
-    numeros[i] := i * 2;
-    i := i + 1;
-  end;
-
-  writeln('Mostrando los elementos del arreglo:');
-  i := 1;
-  while i <= 5 do
-  begin
-    writeln('Elemento ', i, ': ', numeros[i]);
-    i := i + 1;
-  end;
-
-  sumar_elementos(numeros);
-
-  readln;
-end.
+    case (grade) of
+        a : writeln('Excellent!' );
+        2 : writeln('Well done' );
+        a12sd : writeln('You passed' );
+        'd' : writeln('Better try again' );
+    end;     
+    
+    writeln('Your grade is  ', grade );
+    end.
     """
     result = parser.parse(data)
     print(result)
