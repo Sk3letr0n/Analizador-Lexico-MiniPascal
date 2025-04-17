@@ -4,10 +4,10 @@ import sys
 # Definir tokens como tuplas
 tokens = (
     # PALABRAS RESERVADAS
-    'ABSOLUTE', 'AND', 'ARRAY', 'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
-    'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'ASM', 'CASE', 'DESTRUCTOR', 'DOWNTO', 'FUNCTION', 'IN',
-    'INTERFACE', 'LABEL', 'NIL', 'OBJECT', 'PRIVATE', 'REPEAT', 'SHL', 'STRING','TO', 'UNIT', 'USES', 'VIRTUAL', 'WITH', 'CONSTRUCTOR', 'EXTERNAL', 'FILE',
-    'FORWARD', 'GOTO', 'IMPLEMENTATION', 'INLINE', 'INTERRUPT', 'MOD', 'PACKED','RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
+    'AND', 'ARRAY', 'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
+    'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
+    'INTERFACE', 'NIL', 'REPEAT', 'SHL', 'STRING','TO', 'FILE',
+    'GOTO', 'MOD', 'RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
     'MEMORY_ADDRESS', 'STORED_VALUE',
 
     # SIMBOLOS
@@ -170,20 +170,8 @@ def t_END(t):
     r'end\b'
     return t
 
-def t_ABSOLUTE(t):
-    r'absolute\b'
-    return t
-
-def t_ASM(t):
-    r'asm\b'
-    return t
-
 def t_CASE(t):
     r'case\b'
-    return t
-
-def t_DESTRUCTOR(t):
-    r'destructor\b'
     return t
 
 def t_CONST(t):
@@ -230,20 +218,8 @@ def t_INTERFACE(t):
     r'interface\b'
     return t
 
-def t_LABEL(t):
-    r'label\b'
-    return t
-
 def t_NIL(t):
     r'nil\b'
-    return t
-
-def t_OBJECT(t):
-    r'object\b'
-    return t
-
-def t_PRIVATE(t):
-    r'private\b'
     return t
 
 def t_REPEAT(t):
@@ -262,20 +238,8 @@ def t_TO(t):
     r'to\b'
     return t
 
-def t_INLINE(t):
-    r'inline\b'
-    return t
-
-def t_INTERRUPT(t):
-    r'interrupt\b'
-    return t
-
 def t_MOD(t):
     r'mod\b'
-    return t
-
-def t_PACKED(t):
-    r'packed\b'
     return t
 
 def t_RECORD(t):
@@ -298,26 +262,6 @@ def t_XOR(t):
     r'xor\b'
     return t
 
-def t_UNIT(t):
-    r'unit\b'
-    return t
-
-def t_USES(t):
-    r'uses\b'
-    return t
-
-def t_VIRTUAL(t):
-    r'virtual\b'
-    return t
-
-def t_WITH(t):
-    r'with\b'
-    return t
-
-def t_CONSTRUCTOR(t):
-    r'constructor\b'
-    return t
-
 def t_FUNCTION(t):
     r'function\b'
     return t
@@ -326,24 +270,12 @@ def t_IN(t):
     r'in\b'
     return t
 
-def t_EXTERNAL(t):
-    r'external\b'
-    return t
-
 def t_FILE(t):
     r'file\b'
     return t
 
-def t_FORWARD(t):
-    r'forward\b'
-    return t
-
 def t_GOTO(t):
     r'goto\b'
-    return t
-
-def t_IMPLEMENTATION(t):
-    r'implementation\b'
     return t
 
 def t_NUMBER(t):

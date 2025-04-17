@@ -60,6 +60,26 @@ def p_type_specifier_array(p):
     'type_specifier : ARRAY LBLO NUMBER RANGE NUMBER RBLO OF INTEGER'
     # Devuelve una tupla con el tipo de arreglo y sus límites.
     p[0] = ('array', p[3], p[5])
+    
+def p_type_specifier_bool(p):
+    'type_specifier : BOOLEAN'
+    p[0] = 'boolean'
+
+def p_type_specifier_char(p):
+    'type_specifier : CHAR'
+    p[0] = 'char'
+
+def p_type_specifier_string(p):
+    'type_specifier : STRING'
+    p[0] = 'string'
+
+def p_type_specifier_real(p):
+    'type_specifier : REAL'
+    p[0] = 'real'
+
+def p_type_specifier_byte(p):
+    'type_specifier : BYTE'
+    p[0] = 'byte'
 
 # Reglas para las declaraciones de procedimientos.
 def p_procedure_declarations_multi(p):
@@ -202,8 +222,14 @@ def p_simple_expression_tail(p):
         
 def p_addop(p):
     '''addop : PLUS
-             | MINUS'''
+             | MINUS
+             | OR
+             | XOR'''
     p[0] = p[1]
+    
+def p_factor_not(p):
+    'factor : NOT factor'
+    p[0] = ('not', p[2])
     
 # term: secuencia de factores multiplicados o divididos.
 def p_term(p):
@@ -225,7 +251,12 @@ def p_term_tail(p):
         
 def p_mulop(p):
     '''mulop : TIMES
-             | DIVISION'''
+             | DIVISION
+             | DIV
+             | MOD
+             | AND
+             | SHL
+             | SHR'''
     p[0] = p[1]
     
 # factor: puede ser una expresión entre paréntesis, una variable, un número o una cadena.
@@ -267,6 +298,24 @@ def p_statement_readln(p):
 def p_statement_writeln(p):
     'statement : WRITELN LPAR expression_list RPAR'
     p[0] = ('writeln', p[3])
+    
+def p_statement_for(p):
+    '''statement : FOR ID ASSIGN expression TO expression DO statement
+                 | FOR ID ASSIGN expression DOWNTO expression DO statement'''
+    direction = 'to' if p[5] == 'TO' else 'downto'
+    p[0] = ('for', p[2], p[4], direction, p[6], p[8])
+
+def p_factor_true(p):
+    'factor : TRUE'
+    p[0] = ('bool', True)
+
+def p_factor_false(p):
+    'factor : FALSE'
+    p[0] = ('bool', False)
+
+def p_factor_nil(p):
+    'factor : NIL'
+    p[0] = ('nil',)
 
 
 def p_error(p):
