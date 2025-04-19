@@ -61,6 +61,8 @@ reserved = {
     'with': 'WITH',
     'nil': 'NIL',
     'return': 'RETURN',
+    'repeat': 'REPEAT',
+    'until': 'UNTIL',
 }
 
 # Definir reglas de los tokens

@@ -11,6 +11,10 @@ def p_block(p):
     'block : declarations compound_statement'
     p[0] = ('block', p[1], p[2])
 
+def p_block_with_braces(p): #Esta regla no la veo reflejada en las pruebas
+    'block : LBR statement_list RBR'
+    p[0] = ('block', p[2])
+
 # La sección de declaraciones se puede dividir en declaraciones de variables y declaraciones de procedimientos.
 def p_declarations_var_proc(p):
     'declarations : VAR declaration_list procedure_declarations'
@@ -121,6 +125,10 @@ def p_compound_statement(p):
     'compound_statement : BEGIN statement_list END'
     p[0] = ('compound', p[2])
     
+def p_repeat_until_statement(p):
+    'statement : REPEAT statement_list UNTIL expression'
+    p[0] = ('repeat_until', p[2], p[4])
+
 # Una lista de sentencias: una o varias separadas por punto y coma.
 def p_statement_list_multi(p):
     'statement_list : statement statement_list_tail'
@@ -371,14 +379,17 @@ parser = yacc.yacc()
 
 if __name__ == '__main__':
     data = """
-    program EjemploCase;
-    const PI = 3.14;
+    program EjemploSetSinType;
+
     var
-    c: char;
+    conjunto: set of 1..10;
+
     begin
-    c := 'A';
-    writeln('Constante PI: ', PI);
-    writeln('Carácter: ', c);
+    conjunto := [1, 3, 5];
+    if 3 in conjunto then
+        writeln('El número 3 está en el conjunto.');
+    conjunto := conjunto + [7];
+    writeln('Conjunto actualizado.');
     end.
     """
     result = parser.parse(data)
