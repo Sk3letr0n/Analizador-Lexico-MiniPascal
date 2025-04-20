@@ -141,7 +141,11 @@ def p_type_specifier_set(p):
     'type_specifier : SET OF NUMBER RANGE NUMBER'
     p[0] = ('set', p[3], p[5])
     
-def p_factor_set_literal(p):
+def p_factor_set_literal_square(p):
+    'factor : LBLO set_elements RBLO'
+    p[0] = ('set_literal', p[2])
+
+def p_factor_set_literal_curly(p):
     'factor : LBR set_elements RBR'
     p[0] = ('set_literal', p[2])
 
@@ -218,6 +222,10 @@ def p_statement_assignment(p):
 def p_statement_if(p):
     'statement : if_statement'
     p[0] = p[1]
+
+def p_if_statement_no_else(p):
+    'if_statement : IF expression THEN statement'
+    p[0] = ('if', p[2], p[4], None)
 
 def p_statement_while(p):
     'statement : while_statement'

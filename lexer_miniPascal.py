@@ -33,6 +33,7 @@ reserved = {
     'boolean': 'BOOLEAN',
     'array': 'ARRAY',
     'of': 'OF',
+    'in': 'IN',
     'begin': 'BEGIN',
     'end': 'END',
     'if': 'IF',
@@ -110,11 +111,6 @@ def t_STORED_VALUE(t):
     t.type = 'STORED_VALUE'
     return t
 
-def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = reserved.get(t.value.lower(), 'ID')
-    return t
-
 def t_POINTER(t):
     r'\^[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = 'POINTER'
@@ -128,6 +124,11 @@ def t_MEMORY_ADDRESS(t):
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
+
+def t_ID(t):
+    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = reserved.get(t.value.lower(), 'ID')
+    return t
 
 def t_error(t):
     if t.value[0].isdigit():  
