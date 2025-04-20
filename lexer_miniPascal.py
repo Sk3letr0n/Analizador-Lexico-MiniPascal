@@ -7,7 +7,7 @@ tokens = (
     'AND', 'ARRAY', 'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
     'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'NIL', 'REPEAT', 'SHL', 'STRING','TO', 'FILE', 'MOD', 'RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
-    'MEMORY_ADDRESS', 'STORED_VALUE',
+    'MEMORY_ADDRESS', 'STORED_VALUE', 'USES',
 
     # SIMBOLOS
     'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON',
@@ -24,7 +24,9 @@ tokens = (
 )
 
 reserved = {
+
     'program': 'PROGRAM',
+    'uses': 'USES',
     'var': 'VAR',
     'integer': 'INTEGER',
     'real': 'REAL',
@@ -96,40 +98,48 @@ t_ignore = " \t"
 # Ignorar comentarios
 t_ignore_comment = r'\(\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*?\*+\)|{[^{]*}|//.*'
 
+# Definir reglas de los tokens
 def t_NUMBER(t):
     r'\d+(\.\d+)?(?!([a-zA-Z]))'    
     t.value = float(t.value) if '.' in t.value else int(t.value)
     return t
 
+# Definir reglas de los tokens para palabras reservadas
 def t_STRING_LITERAL(t):
     r'\"([^\\\n]|(\\.))*?\"|\'([^\\\n]|(\\.))*?\''
     t.value = t.value[1:-1]
     return t
 
+# Definir reglas de los tokens para palabras reservadas
 def t_STORED_VALUE(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*\^'
     t.type = 'STORED_VALUE'
     return t
 
+# Definir reglas de los tokens para palabras reservadas
 def t_POINTER(t):
     r'\^[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = 'POINTER'
     return t
 
+# Definir reglas de los tokens para palabras reservadas
 def t_MEMORY_ADDRESS(t):
     r'@[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = 'MEMORY_ADDRESS'
     return t
 
+# Definir reglas de los tokens para palabras reservadas
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
+# Definir reglas de los tokens para palabras reservadas
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value.lower(), 'ID')
     return t
 
+# Definir reglas de los tokens para palabras reservadas
 def t_error(t):
     if t.value[0].isdigit():  
         index = 0
