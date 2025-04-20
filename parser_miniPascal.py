@@ -67,6 +67,46 @@ def p_id_list_multi(p):
     'id_list : id_list COMMA ID'
     p[0] = p[1] + [p[3]]
 
+def p_type_specifier_record(p):
+    'type_specifier : RECORD record_field_list END'
+    p[0] = ('record', p[2])
+
+def p_record_field_list(p):
+    '''record_field_list : ID COLON type_specifier SEMICOLON record_field_list
+                         | ID COLON type_specifier SEMICOLON'''
+    if len(p) == 5:
+        p[0] = [(p[1], p[3])]
+    else:
+        p[0] = [(p[1], p[3])] + p[5]
+
+def p_type_specifier_pointer(p):
+    'type_specifier : POINTER type_specifier'
+    p[0] = ('pointer', p[2])
+
+def p_factor_memory_address(p):
+    'factor : MEMORY_ADDRESS ID'
+    p[0] = ('addr_of', p[2])
+
+def p_factor_stored_value(p):
+    'factor : STORED_VALUE ID'
+    p[0] = ('dereference', p[2])
+
+def p_interface_block(p):
+    'block : INTERFACE declarations'
+    p[0] = ('interface', p[2])
+
+def p_function_declaration(p):
+    'procedure_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON block SEMICOLON'
+    p[0] = ('function', p[2], p[4], p[7], p[9])
+
+def p_declarations_type(p):
+    'declarations : TYPE ID EQ type_specifier SEMICOLON declarations'
+    p[0] = [('type_decl', p[2], p[4])] + p[6]
+
+def p_type_specifier_file(p):
+    'type_specifier : FILE'
+    p[0] = 'file'
+
 # El tipo puede ser simplemente INTEGER o la declaración de un arreglo.
 def p_type_specifier_int(p):
     'type_specifier : INTEGER'
@@ -96,6 +136,34 @@ def p_type_specifier_real(p):
 def p_type_specifier_byte(p):
     'type_specifier : BYTE'
     p[0] = 'byte'
+
+def p_type_specifier_set(p):
+    'type_specifier : SET OF NUMBER RANGE NUMBER'
+    p[0] = ('set', p[3], p[5])
+    
+def p_factor_set_literal(p):
+    'factor : LBR set_elements RBR'
+    p[0] = ('set_literal', p[2])
+
+def p_set_elements_multi(p):
+    'set_elements : expression set_elements_tail'
+    p[0] = [p[1]] + p[2]
+
+def p_set_elements_tail(p):
+    '''set_elements_tail : COMMA expression set_elements_tail
+                         | empty'''
+    if len(p) == 2:
+        p[0] = []
+    else:
+        p[0] = [p[2]] + p[3]
+
+def p_set_elements_empty(p):
+    'set_elements : empty'
+    p[0] = []
+    
+def p_expression_in(p):
+    'expression : expression IN expression'
+    p[0] = ('in', p[1], p[3])
 
 # Reglas para las declaraciones de procedimientos.
 def p_procedure_declarations_multi(p):
