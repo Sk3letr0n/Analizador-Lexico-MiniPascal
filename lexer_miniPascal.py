@@ -5,12 +5,12 @@ import sys
 tokens = (
     # PALABRAS RESERVADAS
     'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
-    'DO', 'NOT', 'OR', 'AND' 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
+    'DO', 'NOT', 'OR', 'AND', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'NIL', 'REPEAT', 'SHL', 'STRING','TO', 'FILE', 'MOD', 'RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
     'MEMORY_ADDRESS', 'STORED_VALUE', 
 
     # SIMBOLOS
-    'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON',
+    'PLUS','MINUS','MUL','DIV','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON',
 
     # IDENTIFICADOR
     'ID', 'POINTER',
@@ -71,8 +71,8 @@ reserved = {
 t_CHARCONST = r"'[A-Za-z0-9_]'"
 t_PLUS = r'\+'
 t_MINUS = r'-'
-t_TIMES = r'\*'
-t_DIVISION = r'/'
+t_MUL = r'\*'
+t_DIV = r'/'
 t_EQ = r'\='
 t_NE = r'\<\>'
 t_LT = r'\<'
@@ -91,6 +91,7 @@ t_DOT = r'\.'
 t_COMMA = r'\,'
 t_SEMICOLON = r'\;'
 t_COLON = r'\:'
+t_MOD = r'\%'
 
 t_ignore = " \t"
 

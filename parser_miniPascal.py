@@ -2,6 +2,13 @@ import ply.yacc as yacc
 from lexer_miniPascal import tokens
 import sys
 
+precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'MUL', 'DIV', 'MOD'),
+    ('right', 'NOT'),  # NOT tiene mayor precedencia
+    ('left', 'AND', 'OR'),  # AND y OR tienen menor precedencia
+)
+
 # Un programa en MiniPascal comienza con la palabra clave PROGRAM, un identificador, un punto y coma,
 # seguido de un bloque y termina con un punto.
 
@@ -36,10 +43,25 @@ def p_declaration_block_list(p):
         p[0] = p[1] + [p[2]]
 
 def p_declaration_block(p):
-    '''declaration_block : VAR declaration_list
-                         | CONST const_declaration_list
-                         | procedure_declarations'''
-    p[0] = p[2]
+    '''declaration_block : VAR declaration_list declaration_block
+                         | CONST const_declaration_list declaration_block
+                         | function_declaration declaration_block
+                         | procedure_declarations declaration_block
+                         | empty'''
+    if len(p) == 2:  # Caso empty
+        p[0] = []
+    elif p[1] == 'var':
+        p[0] = p[2] + p[3]
+    elif p[1] == 'const':
+        p[0] = p[2] + p[3]
+    else:  # funciones y procedimientos
+        p[0] = [p[1]] + p[2]
+
+def p_function_declaration(p):
+    '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON compound_statement SEMICOLON'''
+    p[0] = ('function_decl', p[2], p[4], p[7], p[9])
+
+
 # Una lista de declaraciones de variables.
 def p_declaration_list(p):
     '''declaration_list : declaration_list declaration
@@ -145,13 +167,17 @@ def p_statement(p):
     else:
         p[0] = ('writeln', p[3])
 
+def p_while_statement(p):
+    'while_statement : WHILE LPAR expression RPAR DO statement'
+    p[0] = ('while', p[3], p[6])
+
 def p_if_statement(p):
     '''if_statement : IF expression THEN statement
                     | IF expression THEN statement ELSE statement'''
-    if len(p) == 5:
-        p[0] = ('if', p[2], p[4])
-    else:
-        p[0] = ('if-else', p[2], p[4], p[6])
+    if len(p) == 5:  # Caso sin ELSE
+        p[0] = ('if', p[2], p[4])  # ('if', condición, declaración)
+    else:  # Caso con ELSE
+        p[0] = ('if-else', p[2], p[4], p[6])  # ('if-else', condición, declaración, else_declaración)
 
 # Asignación: variable := expresión.
 def p_assignment_statement(p):
@@ -177,28 +203,23 @@ def p_expression_list(p):
     else:
         p[0] = p[1] + [p[3]]
 
-# Expresión: una simple expresión o una operación binaria.
-# Expresión: una simple expresión o una operación binaria.
 def p_expression(p):
-    '''expression :  simple_expression relop simple_expression
-                  | simple_expression'''
-    if len(p) == 2:  # Solo simple_expression
+    '''expression : simple_expression
+                  | simple_expression relop simple_expression
+                  | expression AND expression
+                  | expression OR expression
+                  | NOT expression
+                  | LPAR expression RPAR'''
+    if len(p) == 2:  # Caso base, solo una simple_expression
         p[0] = p[1]
-    elif len(p) == 4:  # Operación binaria
-        p[0] = ('binop', p[2], p[1], p[3])
-    else:  # Expresión lógica
-        p[0] = p[1]
-
-
-# Operadores relacionales.
-def p_relop(p):
-    '''relop : EQ
-             | NE
-             | LT
-             | LE
-             | GT
-             | GE'''
-    p[0] = p[1]
+    elif len(p) == 4 and p[2] in ('AND', 'OR'):  # Expresión lógica
+        p[0] = ('logical_op', p[2], p[1], p[3])
+    elif len(p) == 3 and p[1] == 'NOT':  # Expresión con NOT
+        p[0] = ('not', p[2])
+    elif len(p) == 4 and p[1] == 'LPAR':  # Expresión entre paréntesis
+        p[0] = p[2]
+    elif len(p) == 4:  # Expresión relacional
+        p[0] = ('relop', p[2], p[1], p[3])
 
 # Una simple expresión.
 def p_simple_expression(p):
@@ -226,13 +247,20 @@ def p_term(p):
 
 # Operadores de multiplicación/división.
 def p_mulop(p):
-    '''mulop : TIMES
-             | DIVISION'''
+    '''mulop : MUL
+             | DIV
+             | MOD'''
     p[0] = p[1]
 
-def p_while_statement(p):
-    'while_statement : WHILE LPAR expression RPAR DO statement'
-    p[0] = ('while', p[3], p[6])
+# Operadores relacionales.
+def p_relop(p):
+    '''relop : EQ
+             | NE
+             | LT
+             | LE
+             | GT
+             | GE'''
+    p[0] = p[1]
 
 # Un factor puede ser un número, una variable o una expresión entre paréntesis.
 def p_factor(p):
@@ -242,10 +270,13 @@ def p_factor(p):
               | TRUE
               | FALSE
               | LPAR expression RPAR
-              | NOT factor'''
+              | NOT factor
+              | procedure_call'''
     if len(p) == 2:
         p[0] = p[1]
-    else:
+    elif len(p) == 3 and p[1] == 'NOT':  # Expresión con NOT
+        p[0] = ('not', p[2])
+    elif len(p) == 4 and p[1] == 'LPAR':  # Expresión entre paréntesis
         p[0] = p[2]
 
 # Regla para manejar producciones vacías.
@@ -268,23 +299,34 @@ parser = yacc.yacc(debug=True, write_tables=True, outputdir=".")
 # Prueba del parser.
 if __name__ == '__main__':
     data = """
-    program TestComplex;
-    var
+program TestFunction;
+
+var
     i: integer;
     flag: boolean;
-    begin
+
+function EsPar(x: integer): boolean;
+begin
+    if (x mod 2 = 0) then
+        EsPar := true
+    else
+        EsPar := false;
+end;
+
+begin
     i := 1;
     flag := false;
-    while (i < 20) do
+
+    while (i < 20) do 
     begin
-        if ((i * 2) > 10)  then
-        flag := true
+        if ((i * 2) > 10) and not EsPar(i) then
+            flag := true
         else
-        flag := false;
+            flag := false;
+
         i := i + 3;
     end;
-    end.
-
+end.
     """
    
     
@@ -293,6 +335,8 @@ if __name__ == '__main__':
     print("Análisis sintáctico completado con éxito.")
 
 
+
+#Ejemplos Comprobado 1
     """ program TestComplex;
     var
     i: integer;
@@ -310,3 +354,33 @@ if __name__ == '__main__':
     end;
     end.
 """
+
+#Ejemplos Comprobado 2
+'''program TestFunction;
+
+var
+    i: integer;
+    flag: boolean;
+
+function EsPar(x: integer): boolean;
+begin
+    if (x mod 2 = 0) then
+        EsPar := true
+    else
+        EsPar := false;
+end;
+
+begin
+    i := 1;
+    flag := false;
+
+    while (i < 20) do 
+    begin
+        if ((i * 2) > 10) and not EsPar(i) then
+            flag := true
+        else
+            flag := false;
+
+        i := i + 3;
+    end;
+end.'''
