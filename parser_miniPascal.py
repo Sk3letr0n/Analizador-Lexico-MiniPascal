@@ -9,9 +9,7 @@ precedence = (
     ('left', 'AND', 'OR'),  # AND y OR tienen menor precedencia
 )
 
-# Un programa en MiniPascal comienza con la palabra clave PROGRAM, un identificador, un punto y coma,
-# seguido de un bloque y termina con un punto.
-
+# Un programa en MiniPascal comienza con la palabra clave PROGRAM, un identificador, un punto y coma, seguido de un bloque y termina con un punto.
 def p_program(p):
     '''program : PROGRAM ID SEMICOLON block DOT'''
     p[0] = ('program', p[2], p[4])
@@ -169,11 +167,18 @@ def p_statement(p):
                  | READLN
                  | WRITELN LPAR expression_list RPAR
                  | while_statement
-                 | if_statement'''
+                 | if_statement
+                 | for_statement'''
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = ('writeln', p[3])
+        
+# El paso puede ser TO o DOWNTO, dependiendo de la dirección del bucle.
+def p_for_statement(p):
+    '''for_statement : FOR ID ASSIGN expression TO expression DO statement
+                 | FOR ID ASSIGN expression DOWNTO expression DO statement'''
+    p[0] = ('for', p[2], p[4], p[5], p[6], p[8])  # ID, start, direction, end, body
 
 def p_while_statement(p):
     'while_statement : WHILE LPAR expression RPAR DO statement'
@@ -307,16 +312,28 @@ parser = yacc.yacc(debug=True, write_tables=True, outputdir=".")
 # Prueba del parser.
 if __name__ == '__main__':
     data = """
-    program TestFunction;
-    begin
-    function Factorial(n: integer): integer;
-    var
-        i, resultValue: integer;
-    begin
-        writeln('Calculando factorial de ', n);
-    end;
-   
-    end.
+program FactorialDemo;
+
+function Factorial(n: integer): integer;
+var
+  i, resultValue: integer;
+begin
+  resultValue := 1;
+  for i := 1 to n do
+  begin
+    resultValue := resultValue * i;
+  end;
+  Factorial := resultValue;
+end;
+
+var
+  num, result: integer;
+
+begin
+  num := 5;
+  result := Factorial(num);
+  writeln('El factorial de ', num, ' es ', result);
+end.
     """
    
     
