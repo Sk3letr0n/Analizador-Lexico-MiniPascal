@@ -58,9 +58,17 @@ def p_declaration_block(p):
         p[0] = [p[1]] + p[2]
 
 def p_function_declaration(p):
-    '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON compound_statement SEMICOLON'''
-    p[0] = ('function_decl', p[2], p[4], p[7], p[9])
+    '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement SEMICOLON'''
+    p[0] = ('function_decl', p[2], p[4], p[7], p[9], p[10])  # nombre, parámetros, tipo, declaraciones locales, cuerpo
 
+def p_local_declarations(p):
+    '''local_declarations : VAR declaration_list local_declarations
+                          | CONST const_declaration_list local_declarations
+                          | empty'''
+    if len(p) == 2:  # empty
+        p[0] = []
+    elif p[1] == 'var' or p[1] == 'const':
+        p[0] = p[2] + p[3]
 
 # Una lista de declaraciones de variables.
 def p_declaration_list(p):
@@ -299,34 +307,16 @@ parser = yacc.yacc(debug=True, write_tables=True, outputdir=".")
 # Prueba del parser.
 if __name__ == '__main__':
     data = """
-program TestFunction;
-
-var
-    i: integer;
-    flag: boolean;
-
-function EsPar(x: integer): boolean;
-begin
-    if (x mod 2 = 0) then
-        EsPar := true
-    else
-        EsPar := false;
-end;
-
-begin
-    i := 1;
-    flag := false;
-
-    while (i < 20) do 
+    program TestFunction;
     begin
-        if ((i * 2) > 10) and not EsPar(i) then
-            flag := true
-        else
-            flag := false;
-
-        i := i + 3;
+    function Factorial(n: integer): integer;
+    var
+        i, resultValue: integer;
+    begin
+        writeln('Calculando factorial de ', n);
     end;
-end.
+   
+    end.
     """
    
     
