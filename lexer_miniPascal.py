@@ -5,7 +5,7 @@ import sys
 tokens = (
     # PALABRAS RESERVADAS
     'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
-    'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
+    'DO', 'NOT', 'OR', 'AND' 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'NIL', 'REPEAT', 'SHL', 'STRING','TO', 'FILE', 'MOD', 'RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
     'MEMORY_ADDRESS', 'STORED_VALUE', 
 

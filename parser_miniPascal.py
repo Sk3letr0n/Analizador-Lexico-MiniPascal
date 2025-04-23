@@ -124,11 +124,11 @@ def p_statement_list(p):
     '''statement_list : statement
                       | statement_list SEMICOLON statement
                       | statement_list SEMICOLON'''
-    if len(p) == 2:  # statement
+    if len(p) == 2:
         p[0] = [p[1]]
-    elif len(p) == 3:  # statement_list SEMICOLON
-        p[0] = p[1]
-    else:  # statement_list SEMICOLON statement
+    elif len(p) == 3:
+        p[0] = p[1]  # El último punto y coma es opcional
+    else:
         p[0] = p[1] + [p[3]]
 
 # Una sentencia puede ser una asignación, una llamada a procedimiento, etc.
@@ -137,11 +137,21 @@ def p_statement(p):
                  | procedure_call
                  | compound_statement
                  | READLN
-                 | WRITELN LPAR expression_list RPAR'''
+                 | WRITELN LPAR expression_list RPAR
+                 | while_statement
+                 | if_statement'''
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = ('writeln', p[3])
+
+def p_if_statement(p):
+    '''if_statement : IF expression THEN statement
+                    | IF expression THEN statement ELSE statement'''
+    if len(p) == 5:
+        p[0] = ('if', p[2], p[4])
+    else:
+        p[0] = ('if-else', p[2], p[4], p[6])
 
 # Asignación: variable := expresión.
 def p_assignment_statement(p):
@@ -168,13 +178,17 @@ def p_expression_list(p):
         p[0] = p[1] + [p[3]]
 
 # Expresión: una simple expresión o una operación binaria.
+# Expresión: una simple expresión o una operación binaria.
 def p_expression(p):
-    '''expression : simple_expression
-                  | simple_expression relop simple_expression'''
-    if len(p) == 2:
+    '''expression :  simple_expression relop simple_expression
+                  | simple_expression'''
+    if len(p) == 2:  # Solo simple_expression
         p[0] = p[1]
-    else:
+    elif len(p) == 4:  # Operación binaria
         p[0] = ('binop', p[2], p[1], p[3])
+    else:  # Expresión lógica
+        p[0] = p[1]
+
 
 # Operadores relacionales.
 def p_relop(p):
@@ -216,12 +230,19 @@ def p_mulop(p):
              | DIVISION'''
     p[0] = p[1]
 
+def p_while_statement(p):
+    'while_statement : WHILE LPAR expression RPAR DO statement'
+    p[0] = ('while', p[3], p[6])
+
 # Un factor puede ser un número, una variable o una expresión entre paréntesis.
 def p_factor(p):
     '''factor : NUMBER
               | variable
               | STRING_LITERAL
-              | LPAR expression RPAR'''
+              | TRUE
+              | FALSE
+              | LPAR expression RPAR
+              | NOT factor'''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -254,18 +275,38 @@ if __name__ == '__main__':
     begin
     i := 1;
     flag := false;
-    while ((i < 20) or flag) do
+    while (i < 20) do
     begin
-    if ((i * 2) > 10) and (i <> 15) then
-    flag := true
-    else
-    flag := false;
-    i := i + 3;
+        if ((i * 2) > 10)  then
+        flag := true
+        else
+        flag := false;
+        i := i + 3;
     end;
     end.
+
     """
    
     
     result = parser.parse(data, debug=True)
     print(result)
     print("Análisis sintáctico completado con éxito.")
+
+
+    """ program TestComplex;
+    var
+    i: integer;
+    flag: boolean;
+    begin
+    i := 1;
+    flag := false;
+    while (i < 20) do
+    begin
+        if ((i * 2) > 10)  then
+        flag := true
+        else
+        flag := false;
+        i := i + 3;
+    end;
+    end.
+"""
