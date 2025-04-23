@@ -4,10 +4,10 @@ import sys
 # Definir tokens como tuplas
 tokens = (
     # PALABRAS RESERVADAS
-    'AND', 'ARRAY', 'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
+    'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
     'DO', 'NOT', 'OR', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'NIL', 'REPEAT', 'SHL', 'STRING','TO', 'FILE', 'MOD', 'RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
-    'MEMORY_ADDRESS', 'STORED_VALUE', 'USES',
+    'MEMORY_ADDRESS', 'STORED_VALUE', 
 
     # SIMBOLOS
     'PLUS','MINUS','TIMES','DIVISION','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON',
@@ -26,7 +26,6 @@ tokens = (
 reserved = {
 
     'program': 'PROGRAM',
-    'uses': 'USES',
     'var': 'VAR',
     'integer': 'INTEGER',
     'real': 'REAL',
@@ -69,7 +68,7 @@ reserved = {
 }
 
 # Definir reglas de los tokens
-t_CHARCONST = r'\'[^\']*\'|"[^"]*"'
+t_CHARCONST = r"'[A-Za-z0-9_]'"
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
@@ -95,8 +94,10 @@ t_COLON = r'\:'
 
 t_ignore = " \t"
 
-# Ignorar comentarios
-t_ignore_comment = r'\(\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*?\*+\)|{[^{]*}|//.*'
+
+def t_COMMENT(t):
+    r'\(\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*?\*+\)|\{[^{]*\}|//.*'
+    pass
 
 # Definir reglas de los tokens
 def t_NUMBER(t):
@@ -135,7 +136,7 @@ def t_newline(t):
 
 # Definir reglas de los tokens para palabras reservadas
 def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    r'[a-zA-Z_][a-zA-Z0-9_\*]*'
     t.type = reserved.get(t.value.lower(), 'ID')
     return t
 
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         file_name = sys.argv[1]
     else:
-        file_name = 'test.pas'
+        file_name = 'test2.pas'
     with open(file_name, 'r') as file_data:
         data_content = file_data.read()
     lexer_instance.input(data_content)
