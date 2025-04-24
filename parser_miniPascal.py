@@ -11,9 +11,22 @@ precedence = (
 
 # Un programa en MiniPascal comienza con la palabra clave PROGRAM, un identificador, un punto y coma, seguido de un bloque y termina con un punto.
 def p_program(p):
-    '''program : PROGRAM ID SEMICOLON block DOT'''
-    p[0] = ('program', p[2], p[4])
+    '''program : PROGRAM ID SEMICOLON uses_clause block DOT
+               | PROGRAM ID SEMICOLON block DOT'''
+    if len(p) == 6:  # Caso con uses_clause
+        p[0] = ('program', p[2], p[4], p[5])
+    else:  # Caso sin uses_clause
+        p[0] = ('program', p[2], None, p[4])
 
+# Clausula de uso de unidades.
+# La cláusula de uso puede incluir una o más unidades separadas por comas y termina con un punto y coma.
+def p_uses_clause(p):
+    '''uses_clause : USES id_list SEMICOLON
+                   | empty'''
+    if len(p) == 2:  # Caso vacío
+        p[0] = None
+    else:
+        p[0] = ('uses', p[2])
 
 # Un bloque consiste en declaraciones seguidas de una sentencia compuesta.
 def p_block(p):
@@ -309,31 +322,77 @@ def p_error(p):
 # Construcción del parser.
 parser = yacc.yacc(debug=True, write_tables=True, outputdir=".")
 
+
 # Prueba del parser.
 if __name__ == '__main__':
     data = """
-program FactorialDemo;
+    program GestionDeArchivo;
 
-function Factorial(n: integer): integer;
-var
-  i, resultValue: integer;
-begin
-  resultValue := 1;
-  for i := 1 to n do
-  begin
-    resultValue := resultValue * i;
-  end;
-  Factorial := resultValue;
-end;
+    uses
+    crt,       { Para usar funciones de consola, como clrscr, gotoxy, etc. }
+    sysutils,  { Para manejar cadenas, fechas, y conversiones de tipos }
+    dos,       { Para trabajar con el sistema operativo, por ejemplo, obtener fecha y hora }
+    classes;   { Para usar clases y objetos, en este caso para manipular listas }
 
-var
-  num, result: integer;
+    var
+    archivo: TextFile;    { Declaración de un archivo de texto }
+    nombreArchivo: string;
+    fechaActual: TDateTime;
+    mensaje: string;
+    listaNombres: TStringList;  { Usamos TStringList para manejar listas de cadenas }
 
-begin
-  num := 5;
-  result := Factorial(num);
-  writeln('El factorial de ', num, ' es ', result);
-end.
+    begin
+    clrscr;  { Limpia la pantalla de la consola }
+
+    writeln('Ingrese el nombre del archivo para abrir o crear:');
+    readln(nombreArchivo);
+
+    { Verificar si el archivo existe, si no, crear uno nuevo }
+    if FileExists(nombreArchivo) then
+    begin
+        AssignFile(archivo, nombreArchivo);
+        Reset(archivo);  { Abre el archivo en modo lectura }
+        writeln('Contenido del archivo:');
+        while not Eof(archivo) do
+        begin
+        readln(archivo, mensaje);  { Lee línea por línea del archivo }
+        writeln(mensaje);  { Muestra la línea en la consola }
+        end;
+        CloseFile(archivo);
+    end
+    else
+    begin
+        writeln('El archivo no existe. Se creará uno nuevo.');
+        AssignFile(archivo, nombreArchivo);
+        Rewrite(archivo);  { Crea o abre el archivo en modo escritura }
+        
+        fechaActual := Now;  { Obtiene la fecha y hora actual }
+        writeln(archivo, 'Fecha y hora de creación: ', DateTimeToStr(fechaActual));
+
+        writeln('Ingrese algunos nombres para guardar en el archivo (escriba "fin" para terminar):');
+        listaNombres := TStringList.Create;  { Crea una lista de cadenas }
+        repeat
+        readln(mensaje);
+        if mensaje <> 'fin' then
+        begin
+            listaNombres.Add(mensaje);  { Agrega el nombre a la lista }
+        end;
+        until mensaje = 'fin';
+
+        { Guarda los nombres en el archivo }
+        for mensaje in listaNombres do
+        begin
+        writeln(archivo, mensaje);
+        end;
+        
+        listaNombres.Free;  { Libera la memoria utilizada por la lista }
+        CloseFile(archivo);
+    end;
+
+    writeln('Operación terminada. Presione Enter para salir...');
+    readln;
+    end.
+
     """
    
     
@@ -391,3 +450,29 @@ begin
         i := i + 3;
     end;
 end.'''
+
+#Ejemplos Comprobado 3
+"""
+program FactorialDemo;
+
+function Factorial(n: integer): integer;
+var
+  i, resultValue: integer;
+begin
+  resultValue := 1;
+  for i := 1 to n do
+  begin
+    resultValue := resultValue * i;
+  end;
+  Factorial := resultValue;
+end;
+
+var
+  num, result: integer;
+
+begin
+  num := 5;
+  result := Factorial(num);
+  writeln('El factorial de ', num, ' es ', result);
+end.
+    """

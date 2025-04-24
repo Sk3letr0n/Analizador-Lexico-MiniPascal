@@ -5,9 +5,9 @@ import sys
 tokens = (
     # PALABRAS RESERVADAS
     'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
-    'DO', 'NOT', 'OR', 'AND', 'DIV',  'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
+    'DO', 'NOT', 'OR', 'AND', 'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'NIL', 'REPEAT', 'SHL', 'STRING','TO', 'FILE', 'MOD', 'RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
-    'MEMORY_ADDRESS', 'STORED_VALUE', 
+    'MEMORY_ADDRESS', 'STORED_VALUE', 'USES',
 
     # SIMBOLOS
     'PLUS','MINUS','MUL','DIV','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON',
@@ -27,6 +27,7 @@ reserved = {
 
     'program': 'PROGRAM',
     'var': 'VAR',
+    'uses': 'USES',
     'integer': 'INTEGER',
     'real': 'REAL',
     'char': 'CHAR',
