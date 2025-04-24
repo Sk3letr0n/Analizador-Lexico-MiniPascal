@@ -66,6 +66,7 @@ reserved = {
     'repeat': 'REPEAT',
     'until': 'UNTIL',
     'set': 'SET',
+    'file': 'FILE',
 }
 
 # Definir reglas de los tokens
