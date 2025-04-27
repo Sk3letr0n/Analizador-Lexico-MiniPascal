@@ -133,6 +133,38 @@ end;
 end.
 #------------------------------------------------------------------------------------------------------
 
+#Ejemplos Comprobado 7
+PROGRAM TestTPunto;
+
+TYPE
+  TPunto = OBJECT
+    x, y: REAL;
+    CONSTRUCTOR Inicializar(coord_x, coord_y: REAL);
+    DESTRUCTOR Liberar;
+  END;
+
+VAR
+  punto: TPunto;
+
+CONSTRUCTOR TPunto.Inicializar(coord_x, coord_y: REAL);
+BEGIN
+  x := coord_x;
+  y := coord_y;
+  WRITELN('Punto inicializado en: (', x:0:2, ', ', y:0:2, ')');
+END;
+
+DESTRUCTOR TPunto.Liberar;
+BEGIN
+  WRITELN('Liberando punto en: (', x:0:2, ', ', y:0:2, ')');
+END;
+
+BEGIN
+  WRITELN('Creando un punto...');
+  punto.Inicializar(10.5, 20.3);
+  WRITELN('El punto será liberado.');
+  punto.Liberar;
+END.
+#------------------------------------------------------------------------------------------------------
 
 
 #Ejemplo Clases
@@ -155,6 +187,7 @@ end.
   """  
 
 #------------------------------------------------------------------------------------------------------
+
 
 
 # Ejercicio para testear

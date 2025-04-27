@@ -59,6 +59,9 @@ def p_declaration_block(p):
                          | TYPE type_declaration_list
                          | function_declaration
                          | procedure_declarations
+                         | external_constructor_declaration
+                         | external_destructor_declaration
+                         | external_procedure_declaration
                          | class_declaration declaration_block
                          | empty'''
     if len(p) == 2:  # empty, function_declaration, procedure_declarations, type_declaration_list
@@ -67,8 +70,26 @@ def p_declaration_block(p):
         p[0] = p[2]
 
 def p_function_declaration(p):
-    '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement SEMICOLON'''
-    p[0] = ('function_decl', p[2], p[4], p[7], p[9], p[10])
+    '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON
+                            | FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement SEMICOLON'''
+    if len(p) == 8:  # Caso sin declaraciones locales ni bloque compuesto
+        p[0] = {
+            'type': 'function_decl',
+            'name': p[2],
+            'parameters': p[4],
+            'return_type': p[7],
+            'local_declarations': [],
+            'body': None
+        }
+    elif len(p) == 11:  # Caso con declaraciones locales y bloque compuesto
+        p[0] = {
+            'type': 'function_decl',
+            'name': p[2],
+            'parameters': p[4],
+            'return_type': p[7],
+            'local_declarations': p[9],
+            'body': p[10]
+        }
 
 def p_local_declarations(p):
     '''local_declarations : VAR declaration_list local_declarations
@@ -129,10 +150,33 @@ def p_field(p):
 # Una lista de campos en una declaración de tipo RECORD.
 def p_field_list(p):
     '''field_list : field_list field
-                  | field'''
-    if len(p) == 2:  # Solo un campo
+                  | field
+                  | field_list case_variant
+                  | case_variant'''
+    if len(p) == 2:  # Solo un campo o un case
         p[0] = [p[1]]
     else:  # Lista de campos
+        p[0] = p[1] + [p[2]]
+
+def p_case_variant(p):
+    '''case_variant : CASE ID COLON type_specifier OF record_case_elements'''
+    p[0] = ('case_variant', p[2], p[4], p[6])
+
+
+def p_record_case_element(p):
+    '''record_case_element : expression COLON LPAR id_list COLON type_specifier RPAR SEMICOLON
+                           | expression COLON LPAR id_list COLON type_specifier RPAR'''
+    if len(p) == 8:  # Con punto y coma
+        p[0] = (p[1], ('fields', p[4], p[6]))
+    else:  # Sin punto y coma
+        p[0] = (p[1], ('fields', p[4], p[6]))
+
+def p_record_case_elements(p):
+    '''record_case_elements : record_case_elements record_case_element
+                            | record_case_element'''
+    if len(p) == 2:  # Solo un elemento
+        p[0] = [p[1]]
+    else:  # Varios elementos
         p[0] = p[1] + [p[2]]
 
 # Esta regla define que un puntero (^) puede apuntar a cualquier tipo válido definido por type_specifier.
@@ -149,12 +193,14 @@ def p_type_specifier(p):
                       | STRING
                       | STRING LBLO expression RBLO
                       | ID
+                      | BYTE
                       | LPAR id_list RPAR
                       | NUMBER RANGE NUMBER
                       | ARRAY LBLO expression_list RBLO OF type_specifier
                       | FILE OF type_specifier
                       | SET OF type_specifier
                       | RECORD field_list END
+                      | OBJECT object_body END
                       | CLASS class_body END'''  # Agregado para manejar clases
     if len(p) == 2:
         p[0] = p[1]
@@ -172,6 +218,8 @@ def p_type_specifier(p):
         p[0] = ('set', p[3])
     elif p[1] == 'record':
         p[0] = ('record', p[2])
+    elif p[1] == 'object':
+        p[0] = ('object', p[2])
     elif p[1] == 'class':
         p[0] = ('class_type', p[2])  # Procesa la clase
         
@@ -186,9 +234,38 @@ def p_procedure_declarations(p):
 
 # PROCEDURE id (lista de parámetros) ; block ;
 def p_procedure_declaration(p):
-    'procedure_declaration : PROCEDURE ID LPAR parameter_list RPAR SEMICOLON block SEMICOLON'
-    p[0] = ('procedure', p[2], p[4], p[7])
+    '''procedure_declaration : PROCEDURE ID LPAR parameter_list RPAR SEMICOLON
+                             | PROCEDURE ID LPAR parameter_list RPAR SEMICOLON block SEMICOLON'''
+    if len(p) == 7:  # Caso sin bloque
+        p[0] = ('procedure', p[2], p[4], None)
+    else:  # Caso con bloque
+        p[0] = ('procedure', p[2], p[4], p[7])
 
+# Declaración de un constructor.
+def p_constructor_declaration(p):
+    '''constructor_declaration : CONSTRUCTOR ID LPAR parameter_list RPAR SEMICOLON'''
+    p[0] = ('constructor', p[2], p[4])
+
+# Declaración de un constructor, destructor y procedure externo.
+def p_external_constructor_declaration(p):
+    '''external_constructor_declaration : CONSTRUCTOR ID DOT ID LPAR parameter_list RPAR SEMICOLON block SEMICOLON'''
+    p[0] = ('external_constructor', p[2], p[4], p[6], p[9])
+
+def p_external_destructor_declaration(p):
+    '''external_destructor_declaration : DESTRUCTOR ID DOT ID SEMICOLON block SEMICOLON'''
+    p[0] = ('external_destructor', p[2], p[4], p[6])
+
+def p_external_procedure_declaration(p):
+    '''external_procedure_declaration : PROCEDURE ID DOT ID LPAR parameter_list RPAR SEMICOLON'''
+    p[0] = ('external_procedure', p[2], p[4], p[6])
+
+def p_destructor_declaration(p):
+    '''destructor_declaration : DESTRUCTOR ID SEMICOLON
+                              | DESTRUCTOR ID LPAR parameter_list RPAR SEMICOLON'''
+    if len(p) == 4:  # Caso sin parámetros
+        p[0] = ('destructor', p[2], [])
+    else:  # Caso con parámetros
+        p[0] = ('destructor', p[2], p[4])
 
 def p_parameter_list(p):
     '''parameter_list : empty
@@ -208,7 +285,6 @@ def p_nonempty_parameter_list(p):
 
 def p_parameter(p):
     '''parameter : id_list COLON type_specifier'''
-    # Cada ID de la lista se asocia con el mismo tipo
     p[0] = [(identifier, p[3]) for identifier in p[1]]
     
 # El bloque compuesto se encierra entre BEGIN y END.
@@ -300,8 +376,15 @@ def p_assignment_statement(p):
 
 # Una llamada a procedimiento.
 def p_procedure_call(p):
-    'procedure_call : ID LPAR expression_list RPAR'
-    p[0] = ('procedure_call', p[1], p[3])
+    '''procedure_call : ID LPAR expression_list RPAR
+                      | variable DOT ID LPAR expression_list RPAR
+                      | variable DOT ID'''
+    if len(p) == 5:  # Caso simple: ID(expression_list)
+        p[0] = ('procedure_call', p[1], p[3])
+    elif len(p) == 7:  # Caso con objeto: variable.ID(expression_list)
+        p[0] = ('method_call', p[1], p[3], p[5])
+    else:  # Caso con objeto sin parámetros: variable.ID
+        p[0] = ('method_call', p[1], p[3], [])
   
 def p_class_declaration(p):
     '''class_declaration : CLASS ID class_body END SEMICOLON'''
@@ -318,8 +401,37 @@ def p_class_body(p):
 def p_class_body_element(p):
     '''class_body_element : VAR declaration_list
                            | function_declaration
-                           | procedure_declarations'''
+                           | procedure_declarations
+                           | constructor_declaration
+                           | destructor_declaration'''
     p[0] = p[1]
+
+# Definición de un objeto
+def p_object_declaration(p):
+    '''object_declaration : OBJECT object_body END SEMICOLON'''
+    p[0] = ('object', p[2])
+
+def p_object_body(p):
+    '''object_body : object_body_element_list
+                   | empty'''
+    p[0] = p[1] if p[1] else []
+
+def p_object_body_element_list(p):
+    '''object_body_element_list : object_body_element_list object_body_element
+                                | object_body_element'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_object_body_element(p):
+    '''object_body_element : field
+                           | procedure_declaration
+                           | function_declaration
+                           | constructor_declaration
+                           | destructor_declaration'''
+    p[0] = p[1]
+
 
 # Una variable es un identificador.
 def p_variable(p):
@@ -349,10 +461,15 @@ def p_expression(p):
                   | expression AND expression
                   | expression OR expression
                   | NOT expression
-                  | LPAR expression RPAR'''
-    
+                  | LPAR expression RPAR
+                  | variable COLON NUMBER
+                  | variable COLON NUMBER COLON NUMBER'''
     if len(p) == 2:  # Caso base, solo una simple_expression
         p[0] = p[1]
+    elif len(p) == 4 and p[2] == ':':  # Expresión con un formato
+        p[0] = ('format', p[1], p[3])
+    elif len(p) == 6 and p[2] == ':' and p[4] == ':':  # Expresión con dos formatos
+        p[0] = ('format', p[1], p[3], p[5])
     elif len(p) == 4 and p[2] in ('AND', 'OR'):  # Expresión lógica
         p[0] = ('logical_op', p[2], p[1], p[3])
     elif len(p) == 3 and p[1] == 'NOT':  # Expresión con NOT
@@ -460,18 +577,37 @@ parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''
-    program EjemploRecord;
-begin
-case opcion of
-  1: writeln('Opción 1 seleccionada');
-  2: writeln('Opción 2 seleccionada');
-  3: writeln('Opción 3 seleccionada');
-else
-  writeln('Opción no válida');
-end;
-end.
-'''
+    data = '''PROGRAM TestTPunto;
+
+TYPE
+  TPunto = OBJECT
+    x, y: REAL;
+    CONSTRUCTOR Inicializar(coord_x, coord_y: REAL);
+    DESTRUCTOR Liberar;
+  END;
+
+VAR
+  punto: TPunto;
+
+CONSTRUCTOR TPunto.Inicializar(coord_x, coord_y: REAL);
+BEGIN
+  x := coord_x;
+  y := coord_y;
+  WRITELN('Punto inicializado en: (', x:0:2, ', ', y:0:2, ')');
+END;
+
+DESTRUCTOR TPunto.Liberar;
+BEGIN
+  WRITELN('Liberando punto en: (', x:0:2, ', ', y:0:2, ')');
+END;
+
+BEGIN
+  WRITELN('Creando un punto...');
+  punto.Inicializar(10.5, 20.3);
+  WRITELN('El punto será liberado.');
+  punto.Liberar;
+END.'''
+
     result = parser.parse(data, debug=True)
     print(result)
     print("Análisis sintáctico completado con éxito.")
