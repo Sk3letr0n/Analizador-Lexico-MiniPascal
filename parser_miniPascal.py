@@ -122,6 +122,24 @@ def p_const_declaration_list(p):
         p[0] = p[1] + [p[2]]
 
 
+def p_field(p):
+    'field : id_list COLON type_specifier SEMICOLON'
+    p[0] = ('field', p[1], p[3])
+
+# Una lista de campos en una declaración de tipo RECORD.
+def p_field_list(p):
+    '''field_list : field_list field
+                  | field'''
+    if len(p) == 2:  # Solo un campo
+        p[0] = [p[1]]
+    else:  # Lista de campos
+        p[0] = p[1] + [p[2]]
+
+# Esta regla define que un puntero (^) puede apuntar a cualquier tipo válido definido por type_specifier.
+def p_type_specifier_pointer(p):
+    'type_specifier : POINTER type_specifier'
+    p[0] = ('pointer', p[2])
+
 # Un tipo puede ser INTEGER, REAL, BOOLEAN, CHAR, STRING, etc.
 def p_type_specifier(p):
     '''type_specifier : INTEGER
@@ -136,6 +154,7 @@ def p_type_specifier(p):
                       | ARRAY LBLO expression_list RBLO OF type_specifier
                       | FILE OF type_specifier
                       | SET OF type_specifier
+                      | RECORD field_list END
                       | CLASS class_body END'''  # Agregado para manejar clases
     if len(p) == 2:
         p[0] = p[1]
@@ -151,6 +170,8 @@ def p_type_specifier(p):
         p[0] = ('file', p[3])
     elif p[1] == 'set':
         p[0] = ('set', p[3])
+    elif p[1] == 'record':
+        p[0] = ('record', p[2])
     elif p[1] == 'class':
         p[0] = ('class_type', p[2])  # Procesa la clase
         
@@ -406,36 +427,28 @@ def p_error(p):
     sys.exit(1)
 
 # Construcción del parser.
-parser = yacc.yacc(debug=True, write_tables=True, outputdir=".")
-
+#parser = yacc.yacc(debug=True, write_tables=True, outputdir=".")
+parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = """
-    program FactorialDemo;
+    data = '''
+    program EjemploRecord;
 
-    function Factorial(n: integer): integer;
-    var
-    i, resultValue: integer;
-    begin
-    resultValue := 1;
-    for i := 1 to n do
-    begin
-        resultValue := resultValue * i;
-    end;
-    Factorial := resultValue;
-    end;
+type
+  TRegistro = record
+    id: integer;
+    nombre: string[50];
+    activo: boolean;
+  end;
 
-    var
-    num, result: integer;
+var
+  registro: TRegistro;
 
-    begin
-    num := 5;
-    result := Factorial(num);
-    writeln('El factorial de ', num, ' es ', result);
-    end.
-
-  """  
+begin
+  writeln('Ejemplo de RECORD en Pascal.');
+end.
+'''
     result = parser.parse(data, debug=True)
     print(result)
     print("Análisis sintáctico completado con éxito.")

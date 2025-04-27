@@ -32,6 +32,7 @@ reserved = {
     'real': 'REAL',
     'char': 'CHAR',
     'byte': 'BYTE',
+    'string': 'STRING',
     'boolean': 'BOOLEAN',
     'array': 'ARRAY',
     'of': 'OF',
@@ -95,6 +96,7 @@ t_COMMA = r'\,'
 t_SEMICOLON = r'\;'
 t_COLON = r'\:'
 t_MOD = r'\%'
+t_POINTER = r'\^'
 
 t_ignore = " \t"
 
@@ -119,12 +121,6 @@ def t_STRING_LITERAL(t):
 def t_STORED_VALUE(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*\^'
     t.type = 'STORED_VALUE'
-    return t
-
-# Definir reglas de los tokens para palabras reservadas
-def t_POINTER(t):
-    r'\^[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = 'POINTER'
     return t
 
 # Definir reglas de los tokens para palabras reservadas

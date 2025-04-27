@@ -87,6 +87,39 @@ end.
 
 #------------------------------------------------------------------------------------------------------
 
+#Ejemplos Comprobado 4
+program EjemploPunteros;
+
+    type
+    TPuntero = ^INTEGER;
+
+    var
+    ptr: TPuntero;
+
+    begin
+    writeln('Ejemplo de punteros en Pascal.');
+    end.
+
+#------------------------------------------------------------------------------------------------------
+
+#Ejemplos Comprobado 5
+program EjemploStringSized;
+
+type
+  TRegistro = record
+    id: integer;
+    nombre: string[50];
+    activo: boolean;
+  end;
+
+var
+  registro: TRegistro;
+
+begin
+  writeln('Ejemplo de RECORD con STRING[50].');
+end.
+#------------------------------------------------------------------------------------------------------
+
 
 #Ejemplo Clases
 """
