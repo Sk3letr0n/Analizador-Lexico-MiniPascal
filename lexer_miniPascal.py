@@ -7,7 +7,7 @@ tokens = (
     'CHARCONST', 'RANGE', 'PROGRAM', 'VAR',  'OF', 'PROCEDURE', 'BEGIN', 'END', 'WRITELN', 'READLN', 'IF', 'THEN', 'ELSE', 'WHILE',
     'DO', 'NOT', 'OR', 'AND', 'CONST', 'TYPE', 'INTEGER', 'TRUE', 'FALSE', 'CASE', 'DOWNTO', 'FUNCTION', 'IN',
     'INTERFACE', 'NIL', 'REPEAT', 'SHL', 'STRING','TO', 'FILE', 'MOD', 'RECORD', 'SET', 'SHR', 'UNTIL', 'XOR', 'FOR', 'REAL', 'CHAR', 'BOOLEAN', 'BYTE',
-    'MEMORY_ADDRESS', 'STORED_VALUE', 'USES', 'ARRAY',
+    'MEMORY_ADDRESS', 'STORED_VALUE', 'USES', 'ARRAY', 'CLASS',
 
     # SIMBOLOS
     'PLUS','MINUS','MUL','DIV','EQ','NE', 'LT','GT', 'LE','GE','LPAR','RPAR','LBR','RBR', 'LBLO', 'RBLO', 'ASSIGN','DOT','COMMA', 'SEMICOLON','COLON',
@@ -67,6 +67,7 @@ reserved = {
     'until': 'UNTIL',
     'set': 'SET',
     'file': 'FILE',
+    'class': 'CLASS',
 }
 
 # Definir reglas de los tokens

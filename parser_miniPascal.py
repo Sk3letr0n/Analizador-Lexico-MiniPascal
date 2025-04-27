@@ -59,6 +59,7 @@ def p_declaration_block(p):
                          | TYPE type_declaration_list
                          | function_declaration
                          | procedure_declarations
+                         | class_declaration declaration_block
                          | empty'''
     if len(p) == 2:  # empty, function_declaration, procedure_declarations, type_declaration_list
         p[0] = p[1] if p[1] else []
@@ -67,7 +68,7 @@ def p_declaration_block(p):
 
 def p_function_declaration(p):
     '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement SEMICOLON'''
-    p[0] = ('function_decl', p[2], p[4], p[7], p[9], p[10])  # nombre, parámetros, tipo, declaraciones locales, cuerpo
+    p[0] = ('function_decl', p[2], p[4], p[7], p[9], p[10])
 
 def p_local_declarations(p):
     '''local_declarations : VAR declaration_list local_declarations
@@ -120,14 +121,6 @@ def p_const_declaration_list(p):
     else:
         p[0] = p[1] + [p[2]]
 
-# Una lista de identificadores puede contener uno o más identificadores separados por comas.
-def p_id_list(p):
-    '''id_list : id_list COMMA ID
-               | ID'''
-    if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        p[0] = p[1] + [p[3]]
 
 # Un tipo puede ser INTEGER, REAL, BOOLEAN, CHAR, STRING, etc.
 def p_type_specifier(p):
@@ -142,7 +135,8 @@ def p_type_specifier(p):
                       | NUMBER RANGE NUMBER
                       | ARRAY LBLO expression_list RBLO OF type_specifier
                       | FILE OF type_specifier
-                      | SET OF type_specifier'''
+                      | SET OF type_specifier
+                      | CLASS class_body END'''  # Agregado para manejar clases
     if len(p) == 2:
         p[0] = p[1]
     elif len(p) == 5 and p[1] == 'STRING':
@@ -157,7 +151,9 @@ def p_type_specifier(p):
         p[0] = ('file', p[3])
     elif p[1] == 'set':
         p[0] = ('set', p[3])
-
+    elif p[1] == 'class':
+        p[0] = ('class_type', p[2])  # Procesa la clase
+        
 # Declaraciones de procedimientos.
 def p_procedure_declarations(p):
     '''procedure_declarations : procedure_declarations procedure_declaration
@@ -172,12 +168,28 @@ def p_procedure_declaration(p):
     'procedure_declaration : PROCEDURE ID LPAR parameter_list RPAR SEMICOLON block SEMICOLON'
     p[0] = ('procedure', p[2], p[4], p[7])
 
-# Lista de parámetros.
-def p_parameter_list(p):
-    '''parameter_list : id_list COLON type_specifier
-                      | empty'''
-    p[0] = ('params', p[1], p[3]) if len(p) > 1 else []
 
+def p_parameter_list(p):
+    '''parameter_list : empty
+                      | nonempty_parameter_list'''
+    # Si es empty, p[1] es None y devolvemos lista vacía
+    p[0] = [] if p[1] is None else p[1]
+
+def p_nonempty_parameter_list(p):
+    '''nonempty_parameter_list : parameter
+                               | nonempty_parameter_list COMMA parameter'''
+    if len(p) == 2:
+        # Un solo parámetro
+        p[0] = [p[1]]
+    else:
+        # Añadir p[3] al final de la lista existente
+        p[0] = p[1] + [p[3]]
+
+def p_parameter(p):
+    '''parameter : id_list COLON type_specifier'''
+    # Cada ID de la lista se asocia con el mismo tipo
+    p[0] = [(identifier, p[3]) for identifier in p[1]]
+    
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
     '''compound_statement : BEGIN statement_list END
@@ -241,6 +253,24 @@ def p_assignment_statement(p):
 def p_procedure_call(p):
     'procedure_call : ID LPAR expression_list RPAR'
     p[0] = ('procedure_call', p[1], p[3])
+  
+def p_class_declaration(p):
+    '''class_declaration : CLASS ID class_body END SEMICOLON'''
+    p[0] = ('class', p[2], p[3])
+
+def p_class_body(p):
+    '''class_body : class_body_element class_body
+                  | empty'''
+    if len(p) == 3:
+        p[0] = [p[1]] + p[2]  # [elemento actual] + resto del cuerpo
+    else:
+        p[0] = []  # vacío
+
+def p_class_body_element(p):
+    '''class_body_element : VAR declaration_list
+                           | function_declaration
+                           | procedure_declarations'''
+    p[0] = p[1]
 
 # Una variable es un identificador.
 def p_variable(p):
@@ -291,6 +321,16 @@ def p_simple_expression(p):
         p[0] = p[1]
     else:
         p[0] = ('binop', p[2], p[1], p[3])
+
+
+# Una lista de identificadores puede contener uno o más identificadores separados por comas.
+def p_id_list(p):
+    '''id_list : id_list COMMA ID
+               | ID'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
 # Operadores de suma/resta.
 def p_addop(p):
@@ -354,7 +394,7 @@ def p_factor(p):
 # Regla para manejar producciones vacías.
 def p_empty(p):
     'empty :'
-    pass
+    p[0] = None
 
 # Regla para manejar errores.
 def p_error(p):
@@ -371,595 +411,41 @@ parser = yacc.yacc(debug=True, write_tables=True, outputdir=".")
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''PROGRAM TestErrores;
+    data = """
+    program FactorialDemo;
 
-USES
-  System, Math, Graphics; { Corregido: agregada coma entre System y Math }
+    function Factorial(n: integer): integer;
+    var
+    i, resultValue: integer;
+    begin
+    resultValue := 1;
+    for i := 1 to n do
+    begin
+        resultValue := resultValue * i;
+    end;
+    Factorial := resultValue;
+    end;
 
-CONST
-  PI = 3.14159; { Corregido: agregado punto y coma }
-  VERSION = '1.0';
-  MAX_SIZE = 100;
-  IS_DEBUG = TRUE; { Corregido: se cambió VERDADERO por TRUE }
-  NULL_CHAR = #0;
+    var
+    num, result: integer;
 
-TYPE
-  TDia = (Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo); { Corregido: agregado punto y coma }
-  TRango = 1..100;
-  TMatriz = ARRAY[1..10, 1..10] OF INTEGER; { Corregido: agregado OF }
-  TVector = ARRAY[1..50] OF REAL;
-  TArchivo = FILE OF INTEGER; { Corregido: agregado OF }
-  TConjunto = SET OF CHAR;
-  TPuntero = ^INTEGER;
-  
-  TRegistro = RECORD
-    id: INTEGER;
-    nombre: STRING[50];
-    activo: BOOLEAN;
-    CASE tipo: BYTE OF { Corregido: agregado OF }
-      1: (valor_entero: INTEGER);
-      2: (valor_real: REAL);
-      3: (valor_texto: STRING[100]);
-  END;
-  
-  TEmpleado = RECORD
-    codigo: INTEGER;
-    nombre: STRING[50];
-    salario: REAL;
-    departamento: STRING[30]; { Corregido: agregado punto y coma }
-  END;
-  
-  TListaEmpleados = ARRAY[1..50] OF TEmpleado;
-  
-  TPunto = OBJECT { Corregido: cambiado OBJETO por OBJECT }
-    x, y: REAL;
-    CONSTRUCTOR Inicializar(coord_x, coord_y: REAL);
-    PROCEDURE Mover(dx, dy: REAL);
-    FUNCTION Distancia(otro: TPunto): REAL;
-    DESTRUCTOR Liberar;
-  END;
+    begin
+    num := 5;
+    result := Factorial(num);
+    writeln('El factorial de ', num, ' es ', result);
+    end.
 
-VAR
-  i, j, k, suma, contador: INTEGER;
-  x, y, z, promedio: REAL;
-  nombre, apellido, texto: STRING[50]; { Corregido: eliminado el 1 del principio }
-  bandera, condicion: BOOLEAN;
-  dias: TDia;
-  matriz: TMatriz;
-  vector: TVector;
-  registro: TRegistro;
-  empleados: TListaEmpleados;
-  arch: TArchivo;
-  conj: TConjunto;
-  ptr: TPuntero;
-  punto: TPunto;
-
-PROCEDURE ImprimirMensaje(mensaje: STRING); FORWARD;
-
-FUNCTION CalcularArea(base, altura: REAL): REAL;
-VAR
-  resultado: REAL;
-BEGIN
-  resultado := base * altura / 2;
-  CalcularArea := resultado;
-END;
-
-FUNCTION Factorial(n: INTEGER): INTEGER; { Corregido: agregado punto y coma }
-BEGIN
-  IF n <= 1 THEN
-    Factorial := 1
-  ELSE
-    Factorial := n * Factorial(n - 1);
-END;
-
-PROCEDURE ProcesarDatos(VAR datos: TMatriz; n: INTEGER);
-VAR
-  i, j: INTEGER;
-  temp: REAL;
-BEGIN
-  FOR i := 1 TO n DO
-  BEGIN
-    FOR j := 1 TO n DO
-    BEGIN
-      datos[i,j] := i * j; { Corregido: cambiado = por := }
-    END;
-  END;
-END;
-
-PROCEDURE ImprimirMensaje(mensaje: STRING);
-BEGIN
-  { Este procedimiento imprime un mensaje en pantalla }
-  writeln(mensaje);
-END;
-
-FUNCTION BuscarElemento(arreglo: TVector; tamano: INTEGER; elemento: REAL): INTEGER;
-VAR
-  i: INTEGER;
-  encontrado: BOOLEAN;
-BEGIN
-  encontrado := FALSE;
-  i := 1;
-  WHILE (i <= tamano) AND (NOT encontrado) DO
-  BEGIN
-    IF arreglo[i] = elemento THEN
-      encontrado := TRUE
-    ELSE
-      i := i + 1;
-  END; { Corregido: agregado punto y coma }
-  
-  IF encontrado THEN
-    BuscarElemento := i
-  ELSE
-    BuscarElemento := 0;
-END;
-
-PROCEDURE OrdenarBurbuja(VAR arr: TVector; n: INTEGER);
-VAR
-  i, j: INTEGER;
-  temp: REAL;
-BEGIN
-  FOR i := 1 TO n-1 DO
-    FOR j := 1 TO n-i DO
-      IF arr[j] > arr[j+1] THEN { Corregido: agregado THEN }
-      BEGIN
-        temp := arr[j];
-        arr[j] := arr[j+1];
-        arr[j+1] := temp;
-      END;
-END;
-
-PROCEDURE ManejarCasos(opcion: INTEGER);
-BEGIN
-  CASE opcion OF
-    1: ImprimirMensaje('Opción 1 seleccionada');
-    2: ImprimirMensaje('Opción 2 seleccionada');
-    3, 4: ImprimirMensaje('Opción 3 o 4 seleccionada');
-    5..10: ImprimirMensaje('Opción entre 5 y 10 seleccionada');
-  ELSE { Corregido: cambiado ELSEE por ELSE }
-    ImprimirMensaje('Opción no válida');
-  END;
-END;
-
-PROCEDURE EjemploWith;
-VAR
-  emp: TEmpleado;
-BEGIN
-  WITH emp DO { Corregido: agregado DO }
-  BEGIN
-    codigo := 1001;
-    nombre := 'Juan Pérez';
-    salario := 2500.50;
-    departamento := 'Sistemas';
-  END;
-END;
-
-PROCEDURE RecorrerConjunto(conj: TConjunto);
-VAR
-  c: CHAR;
-BEGIN
-  FOR c := 'A' TO 'Z' DO
-    IF c IN conj THEN { Corregido: agregado THEN }
-      writeln(c, ' está en el conjunto');
-END;
-
-FUNCTION Max(a, b: INTEGER): INTEGER;
-BEGIN
-  IF a > b THEN { Corregido: agregado THEN }
-    Max := a
-  ELSE
-    Max := b;
-END;
-
-PROCEDURE ProcedimientoAnidado;
-VAR
-  x: INTEGER;
-
-  PROCEDURE Interno;
-  VAR
-    y: INTEGER;
-  BEGIN
-    y := x + 5;
-    writeln(y);
-  END;
-
-BEGIN
-  x := 10;
-  Interno;
-END;
-
-CONSTRUCTOR TPunto.Inicializar(coord_x, coord_y: REAL);
-BEGIN
-  x := coord_x;
-  y := coord_y;
-END;
-
-PROCEDURE TPunto.Mover(dx, dy: REAL); { Corregido: agregado punto y coma }
-BEGIN
-  x := x + dx;
-  y := y + dy;
-END;
-
-FUNCTION TPunto.Distancia(otro: TPunto): REAL;
-VAR
-  dx, dy: REAL;
-BEGIN
-  dx := x - otro.x;
-  dy := y - otro.y;
-  Distancia := SQRT(dx*dx + dy*dy);
-END;
-
-DESTRUCTOR TPunto.Liberar;
-BEGIN
-  { Limpieza del objeto }
-END;
-
-PROCEDURE TestRepeatUntil;
-VAR
-  i: INTEGER;
-BEGIN
-  i := 1;
-  REPEAT
-    writeln('Iteración: ', i);
-    i := i + 1;
-  UNTIL i > 10; { Corregido: agregado punto y coma }
-END;
-
-PROCEDURE TestEtiquetas;
-LABEL 100, 200;
-BEGIN
-  GOTO 100;
-  writeln('Esto no se ejecuta');
-  
-  100: { Corregido: agregados dos puntos }
-  writeln('Salto a etiqueta 100');
-  IF i > 10 THEN
-    GOTO 200;
-  
-  writeln('Continuando ejecución');
-  
-  200:
-  writeln('Fin del procedimiento');
-END;
-BEGIN
-  ImprimirMensaje('Programa iniciado');
-  TestRepeatUntil;
-  ImprimirMensaje('Programa finalizado');
-END.'''
-   
-    
+  """  
     result = parser.parse(data, debug=True)
     print(result)
     print("Análisis sintáctico completado con éxito.")
 
 
 
-#Ejemplos Comprobado 1
-    """ program TestComplex;
-    var
-    i: integer;
-    flag: boolean;
-    begin
-    i := 1;
-    flag := false;
-    while (i < 20) do
-    begin
-        if ((i * 2) > 10)  then
-        flag := true
-        else
-        flag := false;
-        i := i + 3;
-    end;
-    end.
-"""
 
-#Ejemplos Comprobado 2
-'''program TestFunction;
 
-var
-    i: integer;
-    flag: boolean;
 
-function EsPar(x: integer): boolean;
-begin
-    if (x mod 2 = 0) then
-        EsPar := true
-    else
-        EsPar := false;
-end;
 
-begin
-    i := 1;
-    flag := false;
+#----------------------------------------------------------------------------------------------------
 
-    while (i < 20) do 
-    begin
-        if ((i * 2) > 10) and not EsPar(i) then
-            flag := true
-        else
-            flag := false;
 
-        i := i + 3;
-    end;
-end.'''
-
-#Ejemplos Comprobado 3
-"""
-program FactorialDemo;
-
-function Factorial(n: integer): integer;
-var
-  i, resultValue: integer;
-begin
-  resultValue := 1;
-  for i := 1 to n do
-  begin
-    resultValue := resultValue * i;
-  end;
-  Factorial := resultValue;
-end;
-
-var
-  num, result: integer;
-
-begin
-  num := 5;
-  result := Factorial(num);
-  writeln('El factorial de ', num, ' es ', result);
-end.
-    """
-
-# Ejercicio para testear
-'''PROGRAM TestErrores;
-
-USES
-  System, Math, Graphics; { Corregido: agregada coma entre System y Math }
-
-CONST
-  PI = 3.14159; { Corregido: agregado punto y coma }
-  VERSION = '1.0';
-  MAX_SIZE = 100;
-  IS_DEBUG = TRUE; { Corregido: se cambió VERDADERO por TRUE }
-  NULL_CHAR = #0;
-
-TYPE
-  TDia = (Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo); { Corregido: agregado punto y coma }
-  TRango = 1..100;
-  TMatriz = ARRAY[1..10, 1..10] OF INTEGER; { Corregido: agregado OF }
-  TVector = ARRAY[1..50] OF REAL;
-  TArchivo = FILE OF INTEGER; { Corregido: agregado OF }
-  TConjunto = SET OF CHAR;
-  TPuntero = ^INTEGER;
-  
-  TRegistro = RECORD
-    id: INTEGER;
-    nombre: STRING[50];
-    activo: BOOLEAN;
-    CASE tipo: BYTE OF { Corregido: agregado OF }
-      1: (valor_entero: INTEGER);
-      2: (valor_real: REAL);
-      3: (valor_texto: STRING[100]);
-  END;
-  
-  TEmpleado = RECORD
-    codigo: INTEGER;
-    nombre: STRING[50];
-    salario: REAL;
-    departamento: STRING[30]; { Corregido: agregado punto y coma }
-  END;
-  
-  TListaEmpleados = ARRAY[1..50] OF TEmpleado;
-  
-  TPunto = OBJECT { Corregido: cambiado OBJETO por OBJECT }
-    x, y: REAL;
-    CONSTRUCTOR Inicializar(coord_x, coord_y: REAL);
-    PROCEDURE Mover(dx, dy: REAL);
-    FUNCTION Distancia(otro: TPunto): REAL;
-    DESTRUCTOR Liberar;
-  END;
-
-VAR
-  i, j, k, suma, contador: INTEGER;
-  x, y, z, promedio: REAL;
-  nombre, apellido, texto: STRING[50]; { Corregido: eliminado el 1 del principio }
-  bandera, condicion: BOOLEAN;
-  dias: TDia;
-  matriz: TMatriz;
-  vector: TVector;
-  registro: TRegistro;
-  empleados: TListaEmpleados;
-  arch: TArchivo;
-  conj: TConjunto;
-  ptr: TPuntero;
-  punto: TPunto;
-
-PROCEDURE ImprimirMensaje(mensaje: STRING); FORWARD;
-
-FUNCTION CalcularArea(base, altura: REAL): REAL;
-VAR
-  resultado: REAL;
-BEGIN
-  resultado := base * altura / 2;
-  CalcularArea := resultado;
-END;
-
-FUNCTION Factorial(n: INTEGER): INTEGER; { Corregido: agregado punto y coma }
-BEGIN
-  IF n <= 1 THEN
-    Factorial := 1
-  ELSE
-    Factorial := n * Factorial(n - 1);
-END;
-
-PROCEDURE ProcesarDatos(VAR datos: TMatriz; n: INTEGER);
-VAR
-  i, j: INTEGER;
-  temp: REAL;
-BEGIN
-  FOR i := 1 TO n DO
-  BEGIN
-    FOR j := 1 TO n DO
-    BEGIN
-      datos[i,j] := i * j; { Corregido: cambiado = por := }
-    END;
-  END;
-END;
-
-PROCEDURE ImprimirMensaje(mensaje: STRING);
-BEGIN
-  { Este procedimiento imprime un mensaje en pantalla }
-  writeln(mensaje);
-END;
-
-FUNCTION BuscarElemento(arreglo: TVector; tamano: INTEGER; elemento: REAL): INTEGER;
-VAR
-  i: INTEGER;
-  encontrado: BOOLEAN;
-BEGIN
-  encontrado := FALSE;
-  i := 1;
-  WHILE (i <= tamano) AND (NOT encontrado) DO
-  BEGIN
-    IF arreglo[i] = elemento THEN
-      encontrado := TRUE
-    ELSE
-      i := i + 1;
-  END; { Corregido: agregado punto y coma }
-  
-  IF encontrado THEN
-    BuscarElemento := i
-  ELSE
-    BuscarElemento := 0;
-END;
-
-PROCEDURE OrdenarBurbuja(VAR arr: TVector; n: INTEGER);
-VAR
-  i, j: INTEGER;
-  temp: REAL;
-BEGIN
-  FOR i := 1 TO n-1 DO
-    FOR j := 1 TO n-i DO
-      IF arr[j] > arr[j+1] THEN { Corregido: agregado THEN }
-      BEGIN
-        temp := arr[j];
-        arr[j] := arr[j+1];
-        arr[j+1] := temp;
-      END;
-END;
-
-PROCEDURE ManejarCasos(opcion: INTEGER);
-BEGIN
-  CASE opcion OF
-    1: ImprimirMensaje('Opción 1 seleccionada');
-    2: ImprimirMensaje('Opción 2 seleccionada');
-    3, 4: ImprimirMensaje('Opción 3 o 4 seleccionada');
-    5..10: ImprimirMensaje('Opción entre 5 y 10 seleccionada');
-  ELSE { Corregido: cambiado ELSEE por ELSE }
-    ImprimirMensaje('Opción no válida');
-  END;
-END;
-
-PROCEDURE EjemploWith;
-VAR
-  emp: TEmpleado;
-BEGIN
-  WITH emp DO { Corregido: agregado DO }
-  BEGIN
-    codigo := 1001;
-    nombre := 'Juan Pérez';
-    salario := 2500.50;
-    departamento := 'Sistemas';
-  END;
-END;
-
-PROCEDURE RecorrerConjunto(conj: TConjunto);
-VAR
-  c: CHAR;
-BEGIN
-  FOR c := 'A' TO 'Z' DO
-    IF c IN conj THEN { Corregido: agregado THEN }
-      writeln(c, ' está en el conjunto');
-END;
-
-FUNCTION Max(a, b: INTEGER): INTEGER;
-BEGIN
-  IF a > b THEN { Corregido: agregado THEN }
-    Max := a
-  ELSE
-    Max := b;
-END;
-
-PROCEDURE ProcedimientoAnidado;
-VAR
-  x: INTEGER;
-
-  PROCEDURE Interno;
-  VAR
-    y: INTEGER;
-  BEGIN
-    y := x + 5;
-    writeln(y);
-  END;
-
-BEGIN
-  x := 10;
-  Interno;
-END;
-
-CONSTRUCTOR TPunto.Inicializar(coord_x, coord_y: REAL);
-BEGIN
-  x := coord_x;
-  y := coord_y;
-END;
-
-PROCEDURE TPunto.Mover(dx, dy: REAL); { Corregido: agregado punto y coma }
-BEGIN
-  x := x + dx;
-  y := y + dy;
-END;
-
-FUNCTION TPunto.Distancia(otro: TPunto): REAL;
-VAR
-  dx, dy: REAL;
-BEGIN
-  dx := x - otro.x;
-  dy := y - otro.y;
-  Distancia := SQRT(dx*dx + dy*dy);
-END;
-
-DESTRUCTOR TPunto.Liberar;
-BEGIN
-  { Limpieza del objeto }
-END;
-
-PROCEDURE TestRepeatUntil;
-VAR
-  i: INTEGER;
-BEGIN
-  i := 1;
-  REPEAT
-    writeln('Iteración: ', i);
-    i := i + 1;
-  UNTIL i > 10; { Corregido: agregado punto y coma }
-END;
-
-PROCEDURE TestEtiquetas;
-LABEL 100, 200;
-BEGIN
-  GOTO 100;
-  writeln('Esto no se ejecuta');
-  
-  100: { Corregido: agregados dos puntos }
-  writeln('Salto a etiqueta 100');
-  IF i > 10 THEN
-    GOTO 200;
-  
-  writeln('Continuando ejecución');
-  
-  200:
-  writeln('Fin del procedimiento');
-END;
-BEGIN
-  ImprimirMensaje('Programa iniciado');
-  TestRepeatUntil;
-  ImprimirMensaje('Programa finalizado');
-END.'''
