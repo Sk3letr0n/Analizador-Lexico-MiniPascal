@@ -121,7 +121,7 @@ def p_const_declaration_list(p):
     else:
         p[0] = p[1] + [p[2]]
 
-
+# Campo de un registro
 def p_field(p):
     'field : id_list COLON type_specifier SEMICOLON'
     p[0] = ('field', p[1], p[3])
@@ -241,7 +241,8 @@ def p_statement(p):
                  | WRITELN LPAR expression_list RPAR
                  | while_statement
                  | if_statement
-                 | for_statement'''
+                 | for_statement
+                 | case_statement'''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -264,6 +265,33 @@ def p_if_statement(p):
         p[0] = ('if', p[2], p[4])  # ('if', condición, declaración)
     else:  # Caso con ELSE
         p[0] = ('if-else', p[2], p[4], p[6])  # ('if-else', condición, declaración, else_declaración)
+
+def p_case_statement(p):
+    '''case_statement : CASE expression OF case_elements END
+                      | CASE expression OF case_elements ELSE statement END
+                      | CASE expression OF case_elements ELSE statement SEMICOLON END'''
+    if len(p) == 6:  # Sin ELSE
+        p[0] = ('case', p[2], p[4], None)
+    elif len(p) == 7:  # Con ELSE sin punto y coma
+        p[0] = ('case', p[2], p[4], p[6])
+    else:  # Con ELSE y punto y coma
+        p[0] = ('case', p[2], p[4], p[6])
+
+def p_case_elements(p):
+    '''case_elements : case_elements case_element
+                     | case_element'''
+    if len(p) == 2:  # Solo un elemento
+        p[0] = [p[1]]
+    else:  # Varios elementos
+        p[0] = p[1] + [p[2]]
+
+def p_case_element(p):
+    '''case_element : expression COLON statement SEMICOLON
+                    | expression COLON statement'''
+    if len(p) == 4:  # Sin punto y coma
+        p[0] = (p[1], p[3])
+    else:  # Con punto y coma
+        p[0] = (p[1], p[3])
 
 # Asignación: variable := expresión.
 def p_assignment_statement(p):
@@ -434,19 +462,14 @@ parser = yacc.yacc()
 if __name__ == '__main__':
     data = '''
     program EjemploRecord;
-
-type
-  TRegistro = record
-    id: integer;
-    nombre: string[50];
-    activo: boolean;
-  end;
-
-var
-  registro: TRegistro;
-
 begin
-  writeln('Ejemplo de RECORD en Pascal.');
+case opcion of
+  1: writeln('Opción 1 seleccionada');
+  2: writeln('Opción 2 seleccionada');
+  3: writeln('Opción 3 seleccionada');
+else
+  writeln('Opción no válida');
+end;
 end.
 '''
     result = parser.parse(data, debug=True)

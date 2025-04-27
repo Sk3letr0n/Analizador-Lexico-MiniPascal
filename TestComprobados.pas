@@ -120,6 +120,20 @@ begin
 end.
 #------------------------------------------------------------------------------------------------------
 
+#Ejemplos Comprobado 6
+program EjemploRecord;
+begin
+case opcion of
+  1: writeln('Opción 1 seleccionada');
+  2: writeln('Opción 2 seleccionada');
+  3: writeln('Opción 3 seleccionada');
+else
+  writeln('Opción no válida');
+end;
+end.
+#------------------------------------------------------------------------------------------------------
+
+
 
 #Ejemplo Clases
 """
