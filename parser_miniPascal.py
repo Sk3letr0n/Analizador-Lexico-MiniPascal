@@ -6,7 +6,7 @@ precedence = (
     ('left', 'PLUS', 'MINUS'),
     ('left', 'MUL', 'DIV', 'MOD'),
     ('right', 'NOT'),  # NOT tiene mayor precedencia
-    ('left', 'AND', 'OR'),  # AND y OR tienen menor precedencia
+    ('left', 'AND', 'OR', 'XOR'),  # AND y OR tienen menor precedencia
 )
 
 # Un programa en MiniPascal comienza con la palabra clave PROGRAM, un identificador, un punto y coma, seguido de un bloque y termina con un punto.
@@ -460,6 +460,7 @@ def p_expression(p):
                   | simple_expression relop simple_expression
                   | expression AND expression
                   | expression OR expression
+                  | expression XOR expression
                   | NOT expression
                   | LPAR expression RPAR
                   | variable COLON NUMBER
@@ -470,7 +471,7 @@ def p_expression(p):
         p[0] = ('format', p[1], p[3])
     elif len(p) == 6 and p[2] == ':' and p[4] == ':':  # Expresión con dos formatos
         p[0] = ('format', p[1], p[3], p[5])
-    elif len(p) == 4 and p[2] in ('AND', 'OR'):  # Expresión lógica
+    elif len(p) == 4 and p[2] in ('AND', 'OR', 'XOR'):  # Expresión lógica
         p[0] = ('logical_op', p[2], p[1], p[3])
     elif len(p) == 3 and p[1] == 'NOT':  # Expresión con NOT
         p[0] = ('not', p[2])
@@ -577,36 +578,16 @@ parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''PROGRAM TestTPunto;
-
-TYPE
-  TPunto = OBJECT
-    x, y: REAL;
-    CONSTRUCTOR Inicializar(coord_x, coord_y: REAL);
-    DESTRUCTOR Liberar;
-  END;
-
-VAR
-  punto: TPunto;
-
-CONSTRUCTOR TPunto.Inicializar(coord_x, coord_y: REAL);
-BEGIN
-  x := coord_x;
-  y := coord_y;
-  WRITELN('Punto inicializado en: (', x:0:2, ', ', y:0:2, ')');
-END;
-
-DESTRUCTOR TPunto.Liberar;
-BEGIN
-  WRITELN('Liberando punto en: (', x:0:2, ', ', y:0:2, ')');
-END;
-
-BEGIN
-  WRITELN('Creando un punto...');
-  punto.Inicializar(10.5, 20.3);
-  WRITELN('El punto será liberado.');
-  punto.Liberar;
-END.'''
+    data = '''program EjemploRecord;
+begin
+case opcion of
+  1: writeln('Opción 1 seleccionada');
+  2: writeln('Opción 2 seleccionada');
+  3: writeln('Opción 3 seleccionada');
+else
+  writeln('Opción no válida');
+end;
+end.'''
 
     result = parser.parse(data, debug=True)
     print(result)
