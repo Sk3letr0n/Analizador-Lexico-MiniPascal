@@ -443,8 +443,9 @@ def p_object_body_element(p):
 
 # Una variable es un identificador.
 def p_variable(p):
-    'variable : ID'
+    '''variable : ID'''
     p[0] = p[1]
+
 
 def p_index_spec(p):
     '''index_spec : expression
@@ -543,12 +544,6 @@ def p_relop(p):
              | GE'''
     p[0] = p[1]
 
-def p_unaryop(p):
-    '''unaryop : PLUS
-               | MINUS
-               | NOT'''
-    p[0] = p[1]
-
 # Un factor puede ser un número, una variable o una expresión entre paréntesis.
 def p_factor(p):
     '''factor : NUMBER
@@ -590,12 +585,10 @@ if __name__ == '__main__':
     data = '''program prueba;
 begin
   i +:= 3;
-  i := 5 + 5;
   j -:= 4;
   i /:= i;
   i *:= 5;
-  
-  e +:= 5;
+  i := 5 + 5;
 
 end.'''
 
