@@ -483,7 +483,7 @@ def p_expression(p):
 # Una simple expresión.
 def p_simple_expression(p):
     '''simple_expression : term
-                         | simple_expression addop term'''
+                         | simple_expression addop term SEMICOLON'''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -578,16 +578,22 @@ parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''program EjemploRecord;
-begin
-case opcion of
-  1: writeln('Opción 1 seleccionada');
-  2: writeln('Opción 2 seleccionada');
-  3: writeln('Opción 3 seleccionada');
-else
-  writeln('Opción no válida');
-end;
-end.'''
+    data = '''program TestComplex;
+    var
+    i: integer;
+    flag: boolean;
+    begin
+    i := 1;
+    flag := false;
+    while (i < 20) do
+    begin
+        if ((i * 2) > 10)  then
+        flag := true
+        else
+        flag := false;
+        i := i + 3
+    end;
+    end.'''
 
     result = parser.parse(data, debug=True)
     print(result)

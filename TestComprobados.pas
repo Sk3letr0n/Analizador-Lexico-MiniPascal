@@ -22,42 +22,6 @@
 
 
 
-#Ejemplos Comprobado 2
-'''program TestFunction;
-
-var
-    i: integer;
-    flag: boolean;
-
-function EsPar(x: integer): boolean;
-begin
-    if (x mod 2 = 0) then
-        EsPar := true
-    else
-        EsPar := false;
-end;
-
-begin
-    i := 1;
-    flag := false;
-
-    while (i < 20) do 
-    begin
-        if ((i * 2) > 10) and not EsPar(i) then
-            flag := true
-        else
-            flag := false;
-
-        i := i + 3;
-    end;
-end.'''
-
-
-
-#------------------------------------------------------------------------------------------------------
-
-
-
 #Ejemplos Comprobado 3
 """
 program FactorialDemo;
