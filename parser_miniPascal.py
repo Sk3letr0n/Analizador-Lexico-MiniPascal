@@ -324,6 +324,15 @@ def p_statement(p):
     else:
         p[0] = ('writeln', p[3])
         
+# Regla para la instrucción return.
+# def p_return_statement(p):
+#     '''return_statement : RETURN expression SEMICOLON
+#                         | RETURN SEMICOLON'''
+#     if len(p) == 3:  # Caso sin expresión (retorno vacío)
+#         p[0] = ('return', None)
+#     else:  # Caso con expresión
+#         p[0] = ('return', p[2])
+        
 # El paso puede ser TO o DOWNTO, dependiendo de la dirección del bucle.
 def p_for_statement(p):
     '''for_statement : FOR ID ASSIGN expression TO expression DO statement
@@ -533,12 +542,6 @@ def p_relop(p):
              | GE'''
     p[0] = p[1]
 
-def p_unaryop(p):
-    '''unaryop : PLUS
-               | MINUS
-               | NOT'''
-    p[0] = p[1]
-
 # Un factor puede ser un número, una variable o una expresión entre paréntesis.
 def p_factor(p):
     '''factor : NUMBER
@@ -577,47 +580,17 @@ parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''PROGRAM TestTPunto;
+    data = '''PROGRAM EjemploReturn;
 
-TYPE
-  TPunto = OBJECT
-    x, y: REAL;
-    CONSTRUCTOR Inicializar(coord_x, coord_y: REAL);
-    DESTRUCTOR Liberar;
-  END;
-
-VAR
-  punto: TPunto;
-
-CONSTRUCTOR TPunto.Inicializar(coord_x, coord_y: REAL);
+FUNCTION Sumar(a, b: INTEGER): INTEGER;
 BEGIN
-  x := coord_x;
-  y := coord_y;
-  WRITELN('Punto inicializado en: (', x:0:2, ', ', y:0:2, ')');
-END;
-
-DESTRUCTOR TPunto.Liberar;
-BEGIN
-  WRITELN('Liberando punto en: (', x:0:2, ', ', y:0:2, ')');
+  RETURN a + b;
 END;
 
 BEGIN
-  WRITELN('Creando un punto...');
-  punto.Inicializar(10.5, 20.3);
-  WRITELN('El punto será liberado.');
-  punto.Liberar;
+  WRITELN(Sumar(10, 20));
 END.'''
 
     result = parser.parse(data, debug=True)
     print(result)
     print("Análisis sintáctico completado con éxito.")
-
-
-
-
-
-
-
-#----------------------------------------------------------------------------------------------------
-
-
