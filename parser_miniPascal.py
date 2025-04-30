@@ -369,10 +369,18 @@ def p_case_element(p):
     else:  # Con punto y coma
         p[0] = (p[1], p[3])
 
-# Asignación: variable := expresión.
 def p_assignment_statement(p):
-    'assignment_statement : variable ASSIGN expression'
-    p[0] = ('assign', p[1], p[3])
+    '''assignment_statement : variable ASSIGN expression
+                            | variable PLUS_ASSIGN expression
+                            | variable MINUS_ASSIGN expression
+                            | variable MUL_ASSIGN expression
+                            | variable DIV_ASSIGN expression'''
+    # p[2] tiene el operador como string (e.g., '+=') que puedes mapear a una operación
+    if p.slice[2].type == 'ASSIGN':
+        p[0] = ('assign', p[1], p[3])
+    else:
+        op = {'PLUS_ASSIGN': '+', 'MINUS_ASSIGN': '-', 'MUL_ASSIGN': '*', 'DIV_ASSIGN': '/'}[p.slice[2].type]
+        p[0] = ('assign', p[1], (op, ('var', p[1]), p[3]))
 
 # Una llamada a procedimiento.
 def p_procedure_call(p):
@@ -483,7 +491,8 @@ def p_expression(p):
 # Una simple expresión.
 def p_simple_expression(p):
     '''simple_expression : term
-                         | simple_expression addop term SEMICOLON'''
+                         | simple_expression addop term SEMICOLON
+                         | simple_expression mulop term SEMICOLON'''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -578,22 +587,17 @@ parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''program TestComplex;
-    var
-    i: integer;
-    flag: boolean;
-    begin
-    i := 1;
-    flag := false;
-    while (i < 20) do
-    begin
-        if ((i * 2) > 10)  then
-        flag := true
-        else
-        flag := false;
-        i := i + 3
-    end;
-    end.'''
+    data = '''program prueba;
+begin
+  i +:= 3;
+  i := 5 + 5;
+  j -:= 4;
+  i /:= i;
+  i *:= 5;
+  
+  e +:= 5;
+
+end.'''
 
     result = parser.parse(data, debug=True)
     print(result)
