@@ -72,6 +72,7 @@ reserved = {
     'object': 'OBJECT',
     'constructor': 'CONSTRUCTOR',
     'destructor': 'DESTRUCTOR',
+    'xor':'XOR',
 }
 
 # Definir reglas de los tokens

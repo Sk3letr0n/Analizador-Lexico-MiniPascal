@@ -6,7 +6,7 @@ precedence = (
     ('left', 'PLUS', 'MINUS'),
     ('left', 'MUL', 'DIV', 'MOD'),
     ('right', 'NOT'),  # NOT tiene mayor precedencia
-    ('left', 'AND', 'OR'),  # AND y OR tienen menor precedencia
+    ('left', 'AND', 'OR', 'XOR'),  # AND y OR tienen menor precedencia
 )
 
 # Un programa en MiniPascal comienza con la palabra clave PROGRAM, un identificador, un punto y coma, seguido de un bloque y termina con un punto.
@@ -42,13 +42,14 @@ def p_block(p):
 
 # La sección de declaraciones puede incluir variables, constantes y procedimientos.
 def p_declarations(p):
-    '''declarations : declaration_block_list'''
+    '''declarations : declaration_block_list
+                    | empty'''
     p[0] = p[1]
 
 def p_declaration_block_list(p):
-    '''declaration_block_list : declaration_block_list declaration_block
-                              | declaration_block'''
-    if len(p) == 2:
+    '''declaration_block_list : declaration_block_list declaration_block SEMICOLON
+                              | declaration_block SEMICOLON'''
+    if len(p) == 3:
         p[0] = [p[1]]
     else:
         p[0] = p[1] + [p[2]]
@@ -71,7 +72,7 @@ def p_declaration_block(p):
 
 def p_function_declaration(p):
     '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON
-                            | FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement SEMICOLON'''
+                            | FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement'''
     if len(p) == 8:  # Caso sin declaraciones locales ni bloque compuesto
         p[0] = {
             'type': 'function_decl',
@@ -90,6 +91,7 @@ def p_function_declaration(p):
             'local_declarations': p[9],
             'body': p[10]
         }
+
 
 def p_local_declarations(p):
     '''local_declarations : VAR declaration_list local_declarations
@@ -318,20 +320,21 @@ def p_statement(p):
                  | while_statement
                  | if_statement
                  | for_statement
-                 | case_statement'''
+                 | case_statement
+                 | return_statement'''  # <-- Agregado aquí
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = ('writeln', p[3])
-        
+
 # Regla para la instrucción return.
-# def p_return_statement(p):
-#     '''return_statement : RETURN expression SEMICOLON
-#                         | RETURN SEMICOLON'''
-#     if len(p) == 3:  # Caso sin expresión (retorno vacío)
-#         p[0] = ('return', None)
-#     else:  # Caso con expresión
-#         p[0] = ('return', p[2])
+def p_return_statement(p):
+     '''return_statement : RETURN expression SEMICOLON
+                         | RETURN SEMICOLON'''
+     if len(p) == 3:  # Caso sin expresión (retorno vacío)
+         p[0] = ('return', None)
+     else:  # Caso con expresión
+        p[0] = ('return', p[2])
         
 # El paso puede ser TO o DOWNTO, dependiendo de la dirección del bucle.
 def p_for_statement(p):
@@ -470,6 +473,7 @@ def p_expression(p):
                   | expression AND expression
                   | expression OR expression
                   | NOT expression
+                  | expression XOR expression
                   | LPAR expression RPAR
                   | variable COLON NUMBER
                   | variable COLON NUMBER COLON NUMBER'''
@@ -582,14 +586,14 @@ parser = yacc.yacc()
 if __name__ == '__main__':
     data = '''PROGRAM EjemploReturn;
 
-FUNCTION Sumar(a, b: INTEGER): INTEGER;
-BEGIN
-  RETURN a + b;
-END;
+    FUNCTION Sumar(a, b: INTEGER): INTEGER;
+    BEGIN
+    RETURN a + b;
+    END;
 
-BEGIN
-  WRITELN(Sumar(10, 20));
-END.'''
+    BEGIN
+    WRITELN(Sumar(10, 20));
+    END.'''
 
     result = parser.parse(data, debug=True)
     print(result)
