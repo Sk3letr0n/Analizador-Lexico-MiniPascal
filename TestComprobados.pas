@@ -445,3 +445,15 @@ BEGIN
   TestRepeatUntil;
   ImprimirMensaje('Programa finalizado');
 END.'''
+
+#------------------------------------------------------------------------------------------------------
+PROGRAM EjemploReturn;
+
+  FUNCTION Sumar(a, b: INTEGER): INTEGER;
+  BEGIN
+    RETURN a + b;
+  END;
+
+  BEGIN
+  WRITELN(Sumar(10, 20));
+END.
