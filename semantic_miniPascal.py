@@ -57,53 +57,50 @@ class SemanticAnalyzer:
         self.visit_program(self.ast)
         print("Análisis semántico completado con éxito.")
 
-    def visit_program(self, node):  # ('program', name, uses, block)
-        # node[1]: nombre del programa, node[3]: bloque principal
-        _, name, uses, block = node
-        # Registrar el nombre del programa en el ámbito global
+    def visit_program(self, node):
+        # ('program', name, block, '.')
+        _, name, block, _ = node  # descartamos el '.' final
         self.global_scope.define(Symbol(name, 'program'))
         # Analizar el bloque principal
         self.visit_block(block)
 
     def visit_block(self, node):  # ('block', decls, comp_stmt)
         _, decls, comp = node
-        # Crear nuevo ámbito anidado para el bloque
+
         saved_scope = self.current_scope
         self.current_scope = SymbolTable(parent=saved_scope)
-        # Procesar declaraciones y compuesto
-        if decls:
+
+        # Verifica si hay declaraciones
+        if decls is not None:
             self.visit_declarations(decls)
-        if comp:
+
+        # Verifica si hay un cuerpo compuesto
+        if comp is not None:
             self.visit_compound(comp)
-        # Restaurar ámbito anterior
+
         self.current_scope = saved_scope
 
+
     def visit_declarations(self, decl_list):
-        """
-        Procesa declaraciones de variables, constantes, funciones y procedimientos.
-        decl_list es una lista de nodos de declaración.
-        """
+        # Aplana listas anidadas (como [[decls]])
+        if decl_list and isinstance(decl_list, list) and isinstance(decl_list[0], list):
+            decl_list = decl_list[0]
+
         for decl in decl_list:
             kind = decl[0]
             if kind == 'decl':  # Variable: ('decl', [ids], type)
                 _, id_list, type_spec = decl
                 for name in id_list:
-                    # Definir cada variable con su tipo
                     self.current_scope.define(Symbol(name, type_spec))
-            elif kind == 'const':  # Constante: ('const', id, expr)
+            elif kind == 'const':
                 _, name, expr = decl
-                # Inferir tipo de la expresión
                 val_type = self.visit_expression(expr)
                 self.current_scope.define(Symbol(name, val_type))
             elif kind == 'function_decl':
-                # Declaración de función
                 self.visit_function_decl(decl)
             elif kind == 'procedure':
-                # Declaración de procedimiento
                 self.visit_procedure_decl(decl)
-            else:
-                # Aquí se podrían añadir otros tipos de declaración
-                pass
+
 
     def visit_function_decl(self, node):
         """
@@ -235,12 +232,26 @@ class SemanticAnalyzer:
         # Nodo compuesto
         if isinstance(node, tuple):
             tag = node[0]
+            if tag == 'var':
+                # ('var', name)
+                _, name = node
+                sym = self.current_scope.lookup(name)
+                if not sym:
+                    raise Exception(f"Error semántico: variable '{name}' no declarada")
+                return sym.type
+
             if tag == 'binop':
                 _, op, left, right = node
                 lt = self.visit_expression(left)
                 rt = self.visit_expression(right)
                 if lt != rt:
                     raise Exception(f"Error de tipo: los operandos de '{op}' deben coincidir, se obtuvo {lt} y {rt}")
+                return lt
+            if tag == '+':  # o 'op' in ('+', '-', '*', '/')
+                lt = self.visit_expression(node[1])
+                rt = self.visit_expression(node[2])
+                if lt != rt:
+                    raise Exception("Type error in addition")
                 return lt
             if tag == 'relop':
                 _, op, a, b = node
@@ -262,4 +273,6 @@ if __name__ == '__main__':
     source = open(filename).read()
     ast = parser.parse(source)
     analyzer = SemanticAnalyzer(ast)
+    print("AST generado:")
+    print(ast)
     analyzer.analyze()

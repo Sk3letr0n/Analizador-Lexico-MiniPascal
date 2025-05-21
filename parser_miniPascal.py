@@ -70,18 +70,12 @@ def p_declaration_block(p):
         p[0] = p[2]
 
 def p_function_declaration(p):
-    '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON
-                            | FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement SEMICOLON'''
-    if len(p) == 8:  # Caso sin declaraciones locales ni bloque compuesto
-        p[0] = {
-            'type': 'function_decl',
-            'name': p[2],
-            'parameters': p[4],
-            'return_type': p[7],
-            'local_declarations': [],
-            'body': None
-        }
-    elif len(p) == 11:  # Caso con declaraciones locales y bloque compuesto
+    '''function_declaration : FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON compound_statement SEMICOLON
+                            | FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON local_declarations compound_statement SEMICOLON
+                            | FUNCTION ID LPAR parameter_list RPAR COLON type_specifier SEMICOLON'''
+
+    if len(p) == 12:
+        # Con declaraciones locales y cuerpo
         p[0] = {
             'type': 'function_decl',
             'name': p[2],
@@ -89,6 +83,26 @@ def p_function_declaration(p):
             'return_type': p[7],
             'local_declarations': p[9],
             'body': p[10]
+        }
+    elif len(p) == 10:
+        # Sin declaraciones locales, con cuerpo
+        p[0] = {
+            'type': 'function_decl',
+            'name': p[2],
+            'parameters': p[4],
+            'return_type': p[7],
+            'local_declarations': [],
+            'body': p[9]
+        }
+    elif len(p) == 8:
+        # Función sin cuerpo (declaración sola)
+        p[0] = {
+            'type': 'function_decl',
+            'name': p[2],
+            'parameters': p[4],
+            'return_type': p[7],
+            'local_declarations': [],
+            'body': None
         }
 
 def p_local_declarations(p):
@@ -587,17 +601,22 @@ parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''program prueba;
-begin
-  i +:= 3;
-  i := 5 + 5;
-  j -:= 4;
-  i /:= i;
-  i *:= 5;
-  
-  e +:= 5;
+    data = '''
+    program Example;
 
-end.'''
+    type
+    MyClass = class
+        var x: integer;
+        var y: string;
+        function add(a, b: integer): integer;
+        begin
+            result := a + b;
+        end;
+    end;
+
+    begin
+    end.
+    '''
 
     result = parser.parse(data, debug=True)
     print(result)
