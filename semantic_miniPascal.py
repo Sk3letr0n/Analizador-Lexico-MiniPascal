@@ -25,7 +25,7 @@ class SymbolTable:
         Lanza excepción si ya existe en este ámbito.
         """
         if symbol.name in self.symbols:
-            raise Exception(f"Semantic error: '{symbol.name}' already declared in this scope")
+            raise Exception(f"Error semántico: '{symbol.name}' ya ha sido declarado en el código.")
         self.symbols[symbol.name] = symbol
 
     def lookup(self, name):
@@ -55,7 +55,7 @@ class SemanticAnalyzer:
         Punto de entrada: inicia el análisis semántico desde el nodo raíz.
         """
         self.visit_program(self.ast)
-        print("Semantic analysis completed successfully.")
+        print("Análisis semántico completado con éxito.")
 
     def visit_program(self, node):  # ('program', name, uses, block)
         # node[1]: nombre del programa, node[3]: bloque principal
@@ -165,11 +165,11 @@ class SemanticAnalyzer:
             # Verificar variable declarada
             var_sym = self.current_scope.lookup(var)
             if not var_sym:
-                raise Exception(f"Semantic error: variable '{var}' not declared")
+                raise Exception(f"Error semántico: variable '{var}' no declarada")
             # Verificar compatibilidad de tipos
             expr_type = self.visit_expression(expr)
             if expr_type != var_sym.type:
-                raise Exception(f"Type error: cannot assign {expr_type} to {var_sym.type}")
+                raise Exception(f"Error de tipo: no se puede asignar {expr_type} a {var_sym.type}")
         elif kind == 'writeln':  # Escritura en consola
             for expr in node[1] if isinstance(node[1], list) else [node[1]]:
                 self.visit_expression(expr)
@@ -178,7 +178,7 @@ class SemanticAnalyzer:
             cond = node[1]
             if_type = self.visit_expression(cond)
             if if_type != 'boolean':
-                raise Exception("Type error: condition in 'if' must be boolean")
+                raise Exception("Error de tipo: la condición en 'if' debe ser boolean")
             # Analizar ramas then y else
             self.visit_statement(node[2])
             if kind == 'if-else':
@@ -186,30 +186,30 @@ class SemanticAnalyzer:
         elif kind == 'while':  # Bucle while
             cond = node[1]
             if self.visit_expression(cond) != 'boolean':
-                raise Exception("Type error: condition in 'while' must be boolean")
+                raise Exception("Error de tipo: la condición en 'while' debe ser boolean")
             self.visit_statement(node[2])
         elif kind == 'for':  # Bucle for
             _, var, start, direction, end, body = node
             sym = self.current_scope.lookup(var)
             if not sym:
-                raise Exception(f"Semantic error: variable '{var}' not declared in 'for'")
+                raise Exception(f"Error semántico: variable '{var}' no declarada en 'for'")
             # Verificar tipos de los límites
             if self.visit_expression(start) != sym.type or self.visit_expression(end) != sym.type:
-                raise Exception("Type error: bounds in 'for' must match loop variable type")
+                raise Exception("Error de tipo: los límites en 'for' deben coincidir con el tipo de la variable de bucle")
             self.visit_statement(body)
         elif kind in ('procedure_call', 'method_call'):
             # Llamada a procedimiento o función: validar existencia y parámetros
             name = node[1]
             sym = self.current_scope.lookup(name)
             if not sym:
-                raise Exception(f"Semantic error: procedure/function '{name}' not declared")
+                raise Exception(f"Error semántico: procedimiento/función '{name}' no declarada")
             args = node[-1]
             if len(args) != len(sym.params):
-                raise Exception(f"Argument error: {name} expects {len(sym.params)} args, got {len(args)}")
+                raise Exception(f"Error de argumento: {name} espera {len(sym.params)} argumentos, pero recibió {len(args)}")
             for arg, (pname, ptype) in zip(args, sym.params):
                 arg_type = self.visit_expression(arg)
                 if arg_type != ptype:
-                    raise Exception(f"Type error in call to {name}: expected {ptype}, got {arg_type}")
+                    raise Exception(f"Error de tipo en llamada a {name}: se esperaba {ptype}, pero se recibió {arg_type}")
         else:
             # Espacio para añadir otros tipos de sentencias
             pass
@@ -240,38 +240,26 @@ class SemanticAnalyzer:
                 lt = self.visit_expression(left)
                 rt = self.visit_expression(right)
                 if lt != rt:
-                    raise Exception(f"Type error: operands of '{op}' must match, got {lt} and {rt}")
+                    raise Exception(f"Error de tipo: los operandos de '{op}' deben coincidir, se obtuvo {lt} y {rt}")
                 return lt
             if tag == 'relop':
                 _, op, a, b = node
                 lt = self.visit_expression(a)
                 rt = self.visit_expression(b)
                 if lt != rt:
-                    raise Exception(f"Type error: operands of '{op}' must match, got {lt} and {rt}")
+                    raise Exception(f"Error de tipo: los operandos de '{op}' deben coincidir, se obtuvo {lt} y {rt}")
                 return 'boolean'
             if tag == 'not':
                 return 'boolean'
             if tag == 'logical_op':
                 return 'boolean'
         # Si no coincide con ningún caso conocido, error
-        raise Exception(f"Unknown expression type: {node}")
+        raise Exception(f"Error de tipo: tipo de expresión desconocido: {node}")
 
 if __name__ == '__main__':
-    # Programa de prueba embebido en el código
-    data = '''program prueba;
-begin
-  i := 3;
-  j := 5 + 5;
-  e := 5;
-
-end.'''  
-
-    # Análisis sintáctico (opcional: activar debug para ver detalles)
-    ast = parser.parse(data, debug=False)
-    print(ast)
-
-    # Análisis semántico
+    
+    filename = "testchiquito.pas"
+    source = open(filename).read()
+    ast = parser.parse(source)
     analyzer = SemanticAnalyzer(ast)
     analyzer.analyze()
-    # Mensaje final
-    print("Análisis semántico exitoso.")
