@@ -1,6 +1,12 @@
-program prueba;
+program prueba6;
+function suma(a, b: integer): integer;
 begin
-  i +:= 3;
-  j := 5 + 5;
-  e +:= 5;
+  suma := a + b;
+end;
+
+var
+  r: integer;
+begin
+  r := suma(2, 3);
 end.
+

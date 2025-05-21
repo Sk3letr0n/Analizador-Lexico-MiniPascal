@@ -82,13 +82,18 @@ class SemanticAnalyzer:
 
 
     def visit_declarations(self, decl_list):
-        # Aplana listas anidadas (como [[decls]])
-        if decl_list and isinstance(decl_list, list) and isinstance(decl_list[0], list):
-            decl_list = decl_list[0]
+        flat_decls = []
 
-        for decl in decl_list:
+        if decl_list:
+            for group in decl_list:
+                if isinstance(group, list):
+                    flat_decls.extend(group)
+                else:
+                    flat_decls.append(group)
+
+        for decl in flat_decls:
             kind = decl[0]
-            if kind == 'decl':  # Variable: ('decl', [ids], type)
+            if kind == 'decl':
                 _, id_list, type_spec = decl
                 for name in id_list:
                     self.current_scope.define(Symbol(name, type_spec))
@@ -100,7 +105,6 @@ class SemanticAnalyzer:
                 self.visit_function_decl(decl)
             elif kind == 'procedure':
                 self.visit_procedure_decl(decl)
-
 
     def visit_function_decl(self, node):
         """
@@ -239,7 +243,19 @@ class SemanticAnalyzer:
                 if not sym:
                     raise Exception(f"Error semántico: variable '{name}' no declarada")
                 return sym.type
-
+            if tag in ('function_call', 'procedure_call'):
+                _, name, args = node
+                sym = self.current_scope.lookup(name)
+                if not sym:
+                    raise Exception(f"Error semántico: función/procedimiento '{name}' no declarada")
+                if len(args) != len(sym.params):
+                    raise Exception(f"Error de argumento: {name} espera {len(sym.params)} argumentos, pero recibió {len(args)}")
+                for arg, (pname, ptype) in zip(args, sym.params):
+                    arg_type = self.visit_expression(arg)
+                    if arg_type != ptype:
+                        raise Exception(f"Error de tipo en llamada a {name}: se esperaba {ptype}, pero se recibió {arg_type}")
+                return sym.type if tag == 'function_call' else None
+        
             if tag == 'binop':
                 _, op, left, right = node
                 lt = self.visit_expression(left)
