@@ -1,0 +1,25 @@
+def visit_block(self, node):  # ('block', decls, comp_stmt)
+        _, decls, comp = node
+
+        saved_scope = self.current_scope
+        self.current_scope = SymbolTable(parent=saved_scope)
+
+        # Verifica si hay declaraciones
+        if decls is not None:
+            self.visit_declarations(decls)
+
+        # Verifica si hay un cuerpo compuesto
+        if comp is not None:
+            self.visit_compound(comp)
+
+        self.current_scope = saved_scope
+
+
+
+
+        def visit_program(self, node):
+        # ('program', name, block, '.')
+        _, name, block, _ = node  # descartamos el '.' final
+        self.global_scope.define(Symbol(name, 'program'))
+        # Analizar el bloque principal
+        self.visit_block(block)

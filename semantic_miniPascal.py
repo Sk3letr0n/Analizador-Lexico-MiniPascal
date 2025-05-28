@@ -39,6 +39,15 @@ class SymbolTable:
                 return table.symbols[name]
             table = table.parent
         return None
+    
+    def print_table(self, indent=0):
+        prefix = "  " * indent
+        print(f"{prefix}Tabla de símbolos (ámbito {'global' if self.parent is None else 'local'}):")
+        for name, sym in self.symbols.items():
+            params = f", params={sym.params}" if sym.params else ""
+            print(f"{prefix}  {name}: tipo={sym.type}{params}")
+        if self.parent:
+            self.parent.print_table(indent + 1)
 
 # Analizador semántico que recorre el AST e infiere/verifica tipos, ámbitos y uso de identificadores
 class SemanticAnalyzer:
@@ -58,17 +67,17 @@ class SemanticAnalyzer:
         print("Análisis semántico completado con éxito.")
 
     def visit_program(self, node):
-        # ('program', name, block, '.')
-        _, name, block, _ = node  # descartamos el '.' final
+        _, name, block, _ = node
         self.global_scope.define(Symbol(name, 'program'))
-        # Analizar el bloque principal
-        self.visit_block(block)
+        # Analizar el bloque principal SIN crear un nuevo ámbito
+        self.visit_block(block, is_main_block=True)
 
-    def visit_block(self, node):  # ('block', decls, comp_stmt)
+    def visit_block(self, node, is_main_block=False):  # Añade un flag para el bloque principal
         _, decls, comp = node
 
-        saved_scope = self.current_scope
-        self.current_scope = SymbolTable(parent=saved_scope)
+        if not is_main_block:
+            saved_scope = self.current_scope
+            self.current_scope = SymbolTable(parent=saved_scope)
 
         # Verifica si hay declaraciones
         if decls is not None:
@@ -78,7 +87,8 @@ class SemanticAnalyzer:
         if comp is not None:
             self.visit_compound(comp)
 
-        self.current_scope = saved_scope
+        if not is_main_block:
+            self.current_scope = saved_scope
 
 
     def visit_declarations(self, decl_list):
@@ -286,9 +296,11 @@ class SemanticAnalyzer:
 if __name__ == '__main__':
     
     filename = "testchiquito.pas"
-    source = open(filename).read()
+    source = open(filename, encoding="utf-8").read()
     ast = parser.parse(source)
     analyzer = SemanticAnalyzer(ast)
     print("AST generado:")
     print(ast)
     analyzer.analyze()
+    print("\nTabla de símbolos:")
+    analyzer.global_scope.print_table()
