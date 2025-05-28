@@ -302,42 +302,58 @@ def p_parameter(p):
     p[0] = [(identifier, p[3]) for identifier in p[1]]
     
 # El bloque compuesto se encierra entre BEGIN y END.
-def p_compound_statement(p):
-    '''compound_statement : BEGIN statement_list END
-                          | BEGIN END'''
-    if len(p) == 3:  # Caso vacío: BEGIN END
-        p[0] = ('compound', [])
-    else:  # Caso con BEGIN statement_list END
-        p[0] = ('compound', p[2])
-
-# Una lista de sentencias.
 def p_statement_list(p):
-    '''statement_list : statement
-                      | statement_list SEMICOLON statement
-                      | statement_list SEMICOLON'''
-    if len(p) == 2:
+    '''statement_list : statement SEMICOLON
+                      | statement SEMICOLON statement_list'''
+    if len(p) == 3:
         p[0] = [p[1]]
-    elif len(p) == 3:
-        p[0] = p[1]  # El último punto y coma es opcional
     else:
-        p[0] = p[1] + [p[3]]
+        p[0] = [p[1]] + p[3]
+
+def p_statement_list_opt(p):
+    '''statement_list_opt : statement_list
+                          | statement_list SEMICOLON
+                          | empty'''
+    if len(p) == 2:
+        if p[1] is None:
+            p[0] = []
+        else:
+            p[0] = p[1]
+    else:
+        p[0] = p[1]
+
+def p_compound_statement(p):
+    '''compound_statement : BEGIN statement_list_opt END'''
+    p[0] = ('compound', p[2])
+    
 
 # Una sentencia puede ser una asignación, una llamada a procedimiento, etc.
 def p_statement(p):
     '''statement : assignment_statement
                  | procedure_call
                  | compound_statement
-                 | READLN
-                 | WRITELN LPAR expression_list RPAR SEMICOLON
+                 | readln_statement
+                 | writeln_statement
+                 | write_statement
                  | while_statement
                  | if_statement
                  | for_statement
                  | case_statement'''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = ('writeln', p[3])
-        
+    p[0] = p[1]
+
+def p_write_statement(p):
+    'write_statement : WRITE LPAR expression_list RPAR '
+    p[0] = ('write', p[3])
+
+def p_writeln_statement(p):
+    'writeln_statement : WRITELN LPAR expression_list RPAR '
+    p[0] = ('writeln', p[3])
+
+def p_readln_statement(p):
+    'readln_statement : READLN LPAR expression_list RPAR '
+    p[0] = ('readln', p[3])
+
+
 # El paso puede ser TO o DOWNTO, dependiendo de la dirección del bucle.
 def p_for_statement(p):
     '''for_statement : FOR ID ASSIGN expression TO expression DO statement
@@ -460,6 +476,16 @@ def p_variable(p):
     'variable : ID'
     p[0] = p[1]
 
+# Para write, writeln, readln
+def p_expression_list(p):
+    '''expression_list : expression
+                       | expression COMMA expression_list'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = [p[1]] + p[3]
+
+# Para rangos de arreglos o subrangos
 def p_index_spec(p):
     '''index_spec : expression
                   | NUMBER RANGE NUMBER'''
@@ -468,14 +494,13 @@ def p_index_spec(p):
     else:
         p[0] = ('subrange', p[1], p[3])
 
-# Una lista de expresiones.
-def p_expression_list(p):
-    '''expression_list : expression_list COMMA index_spec
-                       | index_spec'''
+def p_index_spec_list(p):
+    '''index_spec_list : index_spec
+                       | index_spec COMMA index_spec_list'''
     if len(p) == 2:
         p[0] = [p[1]]
     else:
-        p[0] = p[1] + [p[3]]
+        p[0] = [p[1]] + p[3]
 
 def p_expression(p):
     '''expression : simple_expression
@@ -505,13 +530,12 @@ def p_expression(p):
 # Una simple expresión.
 def p_simple_expression(p):
     '''simple_expression : term
-                         | simple_expression addop term SEMICOLON
-                         | simple_expression mulop term SEMICOLON'''
+                         | simple_expression addop term
+                         | simple_expression mulop term'''
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = ('binop', p[2], p[1], p[3])
-
 
 # Una lista de identificadores puede contener uno o más identificadores separados por comas.
 def p_id_list(p):
