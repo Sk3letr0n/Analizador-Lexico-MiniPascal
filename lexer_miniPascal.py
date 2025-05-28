@@ -20,6 +20,10 @@ tokens = (
 
     # STRING
     'STRING_LITERAL',
+    'PLUS_ASSIGN',
+    'MINUS_ASSIGN',
+    'MUL_ASSIGN',
+    'DIV_ASSIGN',
 
 )
 
@@ -93,7 +97,7 @@ t_LBR = r'\{'
 t_RBR = r'\}'
 t_LBLO = r'\['
 t_RBLO = r'\]'
-t_ASSIGN = r'\:\='
+t_ASSIGN = r'\:='
 t_RANGE = r'\.\.'
 t_DOT = r'\.'
 t_COMMA = r'\,'
@@ -101,6 +105,10 @@ t_SEMICOLON = r'\;'
 t_COLON = r'\:'
 t_MOD = r'\%'
 t_POINTER = r'\^'
+t_PLUS_ASSIGN = r'\+:='
+t_MINUS_ASSIGN = r'\-:='
+t_MUL_ASSIGN = r'\*:='
+t_DIV_ASSIGN = r'\/:='
 
 t_ignore = " \t"
 

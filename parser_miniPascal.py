@@ -381,10 +381,18 @@ def p_case_element(p):
     else:  # Con punto y coma
         p[0] = (p[1], p[3])
 
-# Asignación: variable := expresión.
 def p_assignment_statement(p):
-    'assignment_statement : variable ASSIGN expression'
-    p[0] = ('assign', p[1], p[3])
+    '''assignment_statement : variable ASSIGN expression
+                            | variable PLUS_ASSIGN expression
+                            | variable MINUS_ASSIGN expression
+                            | variable MUL_ASSIGN expression
+                            | variable DIV_ASSIGN expression'''
+    # p[2] tiene el operador como string (e.g., '+=') que puedes mapear a una operación
+    if p.slice[2].type == 'ASSIGN':
+        p[0] = ('assign', p[1], p[3])
+    else:
+        op = {'PLUS_ASSIGN': '+', 'MINUS_ASSIGN': '-', 'MUL_ASSIGN': '*', 'DIV_ASSIGN': '/'}[p.slice[2].type]
+        p[0] = ('assign', p[1], (op, ('var', p[1]), p[3]))
 
 # Una llamada a procedimiento.
 def p_procedure_call(p):
@@ -447,8 +455,9 @@ def p_object_body_element(p):
 
 # Una variable es un identificador.
 def p_variable(p):
-    'variable : ID'
+    '''variable : ID'''
     p[0] = p[1]
+
 
 def p_index_spec(p):
     '''index_spec : expression
@@ -472,6 +481,7 @@ def p_expression(p):
                   | simple_expression relop simple_expression
                   | expression AND expression
                   | expression OR expression
+                  | expression XOR expression
                   | NOT expression
                   | expression XOR expression
                   | LPAR expression RPAR
@@ -483,7 +493,7 @@ def p_expression(p):
         p[0] = ('format', p[1], p[3])
     elif len(p) == 6 and p[2] == ':' and p[4] == ':':  # Expresión con dos formatos
         p[0] = ('format', p[1], p[3], p[5])
-    elif len(p) == 4 and p[2] in ('AND', 'OR'):  # Expresión lógica
+    elif len(p) == 4 and p[2] in ('AND', 'OR', 'XOR'):  # Expresión lógica
         p[0] = ('logical_op', p[2], p[1], p[3])
     elif len(p) == 3 and p[1] == 'NOT':  # Expresión con NOT
         p[0] = ('not', p[2])
@@ -495,7 +505,8 @@ def p_expression(p):
 # Una simple expresión.
 def p_simple_expression(p):
     '''simple_expression : term
-                         | simple_expression addop term'''
+                         | simple_expression addop term SEMICOLON
+                         | simple_expression mulop term SEMICOLON'''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -584,16 +595,15 @@ parser = yacc.yacc()
 
 # Prueba del parser.
 if __name__ == '__main__':
-    data = '''PROGRAM EjemploReturn;
+    data = '''program prueba;
+begin
+  i +:= 3;
+  j -:= 4;
+  i /:= i;
+  i *:= 5;
+  i := 5 + 5;
 
-    FUNCTION Sumar(a, b: INTEGER): INTEGER;
-    BEGIN
-    RETURN a + b;
-    END;
-
-    BEGIN
-    WRITELN(Sumar(10, 20));
-    END.'''
+end.'''
 
     result = parser.parse(data, debug=True)
     print(result)
