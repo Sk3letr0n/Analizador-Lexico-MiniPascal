@@ -7,7 +7,7 @@ class Symbol:
         # Nombre del identificador (variable, función, etc.)
         self.name = name
         # Tipo del símbolo: para variables/constantes es el tipo de dato, para funciones el tipo de retorno
-        self.type = sym_type
+        self.type = sym_type.lower()  # Normalizar tipo a minúsculas
         # Lista de parámetros (solo para funciones/procedimientos)
         self.params = params or []
 
@@ -154,12 +154,28 @@ class SemanticAnalyzer:
         saved = self.current_scope
         proc_scope = SymbolTable(parent=saved)
         self.current_scope = proc_scope
+
+        # Asegurarse de que los parámetros sean una lista plana de tuplas
+        flat_params = []
+        for param in params:
+            if isinstance(param, list):
+                flat_params.extend(param)  # Aplanar listas anidadas
+            else:
+                flat_params.append(param)
+
         # Definir parámetros
-        for pname, ptype in params:
-            self.current_scope.define(Symbol(pname, ptype))
+        for param in flat_params:
+            if isinstance(param, tuple) and len(param) == 2:
+                pname, ptype = param
+                self.current_scope.define(Symbol(pname, ptype))
+            else:
+                print(f"Parámetro inválido: {param}")
+                raise Exception(f"Error semántico: parámetro inválido en procedimiento '{name}'")
+
         # Analizar bloque del procedimiento
         if block:
             self.visit_block(block)
+
         # Restaurar ámbito anterior
         self.current_scope = saved
 
@@ -179,7 +195,8 @@ class SemanticAnalyzer:
                 raise Exception(f"Error semántico: variable '{var}' no declarada")
             # Verificar compatibilidad de tipos
             expr_type = self.visit_expression(expr)
-            if expr_type != var_sym.type:
+# filepath: c:\Repositorios\Analizador-Lexico-MiniPascal\semantic_miniPascal.py
+            if expr_type.lower() != var_sym.type.lower():
                 raise Exception(f"Error de tipo: no se puede asignar {expr_type} a {var_sym.type}")
         elif kind == 'writeln':  # Escritura en consola
             for expr in node[1] if isinstance(node[1], list) else [node[1]]:
@@ -266,11 +283,15 @@ class SemanticAnalyzer:
                         raise Exception(f"Error de tipo en llamada a {name}: se esperaba {ptype}, pero se recibió {arg_type}")
                 return sym.type if tag == 'function_call' else None
         
+            # filepath: c:\Repositorios\Analizador-Lexico-MiniPascal\semantic_miniPascal.py
             if tag == 'binop':
                 _, op, left, right = node
                 lt = self.visit_expression(left)
                 rt = self.visit_expression(right)
                 if lt != rt:
+                    # Permitir concatenación de cadenas si el operador es '+'
+                    if op == '+' and ((lt == 'string' and rt == 'string') or (lt == 'string' and rt == 'integer') or (lt == 'integer' and rt == 'string')):
+                        return 'string'
                     raise Exception(f"Error de tipo: los operandos de '{op}' deben coincidir, se obtuvo {lt} y {rt}")
                 return lt
             if tag == '+':  # o 'op' in ('+', '-', '*', '/')

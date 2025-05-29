@@ -21,7 +21,7 @@ begin
   e:= 0;
   sum:= 1;
   name:= 'hola';
-  sum:= i + name;
+  sum:= i + e;
  
   for i := 1 to MAX do
   begin
