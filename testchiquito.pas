@@ -20,12 +20,12 @@ begin
   i:= 1;
   e:= 0;
   sum:= 1;
-  name:= 'hola';
-  sum:= i + e;
- 
+  name:= "hola";
+  sum:= i + name;
+  sum := 0;
   for i := 1 to MAX do
   begin
-  sum := sum + i;
+    sum := sum + i;
   sum +:=10;
   sum -:=10;
   sum *:=10;

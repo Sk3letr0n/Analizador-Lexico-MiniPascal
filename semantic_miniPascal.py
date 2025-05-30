@@ -297,6 +297,8 @@ class SemanticAnalyzer:
             return 'integer' if isinstance(node, int) else 'real'
         # Cadenas o variables: si existe en tabla, es variable; si no, literal string
         if isinstance(node, str):
+            if node.lower() in ('true', 'false'):
+                return 'boolean'
             sym = self.current_scope.lookup(node)
             if sym:
                 return sym.type
@@ -305,6 +307,7 @@ class SemanticAnalyzer:
         # Nodo compuesto
         if isinstance(node, tuple):
             tag = node[0]
+
             if tag == 'var':
                 # ('var', name)
                 _, name = node
@@ -312,6 +315,7 @@ class SemanticAnalyzer:
                 if not sym:
                     raise Exception(f"Error semántico: variable '{name}' no declarada")
                 return sym.type
+
             if tag in ('function_call', 'procedure_call'):
                 _, name, args = node
                 sym = self.current_scope.lookup(name)
@@ -337,12 +341,14 @@ class SemanticAnalyzer:
                         return 'string'
                     raise Exception(f"Error de tipo: los operandos de '{op}' deben coincidir, se obtuvo {lt} y {rt}")
                 return lt
+            
             if tag == '+':  # o 'op' in ('+', '-', '*', '/')
                 lt = self.visit_expression(node[1])
                 rt = self.visit_expression(node[2])
                 if lt != rt:
                     raise Exception("Type error in addition")
                 return lt
+            
             if tag == 'relop':
                 _, op, a, b = node
                 lt = self.visit_expression(a)
@@ -354,17 +360,21 @@ class SemanticAnalyzer:
                 return 'boolean'
             if tag == 'logical_op':
                 return 'boolean'
+        
         # Si no coincide con ningún caso conocido, error
         raise Exception(f"Error de tipo: tipo de expresión desconocido: {node}")
 
 if __name__ == '__main__':
-    
-    filename = "testchiquito.pas"
-    source = open(filename, encoding="utf-8").read()
-    ast = parser.parse(source)
-    analyzer = SemanticAnalyzer(ast)
-    print("AST generado:")
-    print(ast)
-    analyzer.analyze()
-    print("\nTabla de símbolos:")
-    analyzer.global_scope.print_table()
+    try:
+        filename = "testchiquito.pas"
+        source = open(filename, encoding="utf-8").read()
+        ast = parser.parse(source)
+        analyzer = SemanticAnalyzer(ast)
+        #print("AST generado:")
+        #print(ast)
+        analyzer.analyze()
+        print("\nTabla de símbolos:")
+        analyzer.global_scope.print_table()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
