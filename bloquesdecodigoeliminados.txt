@@ -23,3 +23,52 @@ def visit_block(self, node):  # ('block', decls, comp_stmt)
         self.global_scope.define(Symbol(name, 'program'))
         # Analizar el bloque principal
         self.visit_block(block)
+
+def visit_declarations(self, decl_list):
+        flat_decls = []
+
+        if decl_list:
+            for group in decl_list:
+                if isinstance(group, list):
+                    flat_decls.extend(group)
+                else:
+                    flat_decls.append(group)
+
+        for decl in flat_decls:
+            kind = decl[0]
+            if kind == 'decl':
+                _, id_list, type_spec = decl
+                for name in id_list:
+                    self.current_scope.define(Symbol(name, type_spec))
+            elif kind == 'const':
+                _, name, expr = decl
+                val_type = self.visit_expression(expr)
+                self.current_scope.define(Symbol(name, val_type))
+            elif kind == 'function_decl':
+                self.visit_function_decl(decl)
+            elif kind == 'procedure':
+                self.visit_procedure_decl(decl)
+
+        del parser
+def p_unaryop(p):
+    '''unaryop : PLUS
+               | MINUS
+               | NOT'''
+    p[0] = p[1]
+
+# Para rangos de arreglos o subrangos
+def p_index_spec(p):
+    '''index_spec : expression
+                  | NUMBER RANGE NUMBER'''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = ('subrange', p[1], p[3])
+
+def p_index_spec_list(p):
+    '''index_spec_list : index_spec
+                       | index_spec COMMA index_spec_list'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = [p[1]] + p[3]

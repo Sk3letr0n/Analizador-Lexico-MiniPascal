@@ -102,19 +102,51 @@ class SemanticAnalyzer:
                     flat_decls.append(group)
 
         for decl in flat_decls:
-            kind = decl[0]
-            if kind == 'decl':
-                _, id_list, type_spec = decl
-                for name in id_list:
-                    self.current_scope.define(Symbol(name, type_spec))
-            elif kind == 'const':
-                _, name, expr = decl
-                val_type = self.visit_expression(expr)
-                self.current_scope.define(Symbol(name, val_type))
-            elif kind == 'function_decl':
-                self.visit_function_decl(decl)
-            elif kind == 'procedure':
-                self.visit_procedure_decl(decl)
+            if isinstance(decl, dict):
+                # Es una función o procedimiento
+                if decl.get('type') == 'function_decl':
+                    self.visit_function_decl(decl)
+                elif decl.get('type') == 'procedure_decl':
+                    self.visit_procedure_decl(decl)
+                else:
+                    raise Exception(f"Tipo de declaración desconocido: {decl.get('type')}")
+            elif isinstance(decl, tuple):
+                kind = decl[0]
+                if kind == 'decl':
+                    _, id_list, type_spec = decl
+                    for name in id_list:
+                        self.current_scope.define(Symbol(name, type_spec))
+                elif kind == 'const':
+                    _, name, expr = decl
+                    val_type = self.visit_expression(expr)
+                    self.current_scope.define(Symbol(name, val_type))
+                elif kind == 'procedure':
+                    # ('procedure', name, params, block)
+                    _, name, params, block = decl
+                    # Aplanar parámetros
+                    flat_params = []
+                    for param in params:
+                        if isinstance(param, list):
+                            flat_params.extend(param)
+                        else:
+                            flat_params.append(param)
+                    # Registrar el procedimiento en la tabla de símbolos
+                    self.current_scope.define(Symbol(name, 'procedure', flat_params))
+                    # Analizar el bloque del procedimiento
+                    saved = self.current_scope
+                    proc_scope = SymbolTable(parent=saved)
+                    self.current_scope = proc_scope
+                    # Definir parámetros en el nuevo ámbito
+                    for param in flat_params:
+                        if isinstance(param, tuple) and len(param) == 2:
+                            pname, ptype = param
+                            self.current_scope.define(Symbol(pname, ptype))
+                    if block:
+                        self.visit_block(block)
+                    self.current_scope = saved
+                
+            else:
+                raise Exception(f"Declaración inesperada: {decl}")        
 
     def visit_function_decl(self, node):
         """
@@ -124,14 +156,23 @@ class SemanticAnalyzer:
         name = node['name']
         params = node['parameters']
         ret_type = node['return_type']
+
+        # Aplanar la lista de parámetros
+        flat_params = []
+        for param in params:
+            if isinstance(param, list):
+                flat_params.extend(param)
+            else:
+                flat_params.append(param)
+
         # Registrar función en el ámbito actual
-        self.current_scope.define(Symbol(name, ret_type, params))
+        self.current_scope.define(Symbol(name, ret_type, flat_params))
         # Nuevo ámbito para la función
         saved = self.current_scope
         func_scope = SymbolTable(parent=saved)
         self.current_scope = func_scope
         # Definir parámetros en el nuevo ámbito
-        for pname, ptype in params:
+        for pname, ptype in flat_params:
             self.current_scope.define(Symbol(pname, ptype))
         # Definir variables locales
         for decl in node.get('local_declarations', []):
@@ -150,18 +191,20 @@ class SemanticAnalyzer:
         node: ('procedure', name, params, block)
         """
         _, name, params, block = node
-        self.current_scope.define(Symbol(name, 'procedure', params))
-        saved = self.current_scope
-        proc_scope = SymbolTable(parent=saved)
-        self.current_scope = proc_scope
 
-        # Asegurarse de que los parámetros sean una lista plana de tuplas
+        # Aplanar la lista de parámetros ANTES de usarla
         flat_params = []
         for param in params:
             if isinstance(param, list):
                 flat_params.extend(param)  # Aplanar listas anidadas
             else:
                 flat_params.append(param)
+
+        # Ahora sí, define el símbolo usando flat_params
+        self.current_scope.define(Symbol(name, 'procedure', flat_params))
+        saved = self.current_scope
+        proc_scope = SymbolTable(parent=saved)
+        self.current_scope = proc_scope
 
         # Definir parámetros
         for param in flat_params:
@@ -226,7 +269,6 @@ class SemanticAnalyzer:
                 raise Exception("Error de tipo: los límites en 'for' deben coincidir con el tipo de la variable de bucle")
             self.visit_statement(body)
         elif kind in ('procedure_call', 'method_call'):
-            # Llamada a procedimiento o función: validar existencia y parámetros
             name = node[1]
             sym = self.current_scope.lookup(name)
             if not sym:
@@ -239,7 +281,7 @@ class SemanticAnalyzer:
                 if arg_type != ptype:
                     raise Exception(f"Error de tipo en llamada a {name}: se esperaba {ptype}, pero se recibió {arg_type}")
         else:
-            # Espacio para añadir otros tipos de sentencias
+            # Espacio para otro tipo de sentencias
             pass
 
     def visit_expression(self, node):
@@ -281,7 +323,8 @@ class SemanticAnalyzer:
                     arg_type = self.visit_expression(arg)
                     if arg_type != ptype:
                         raise Exception(f"Error de tipo en llamada a {name}: se esperaba {ptype}, pero se recibió {arg_type}")
-                return sym.type if tag == 'function_call' else None
+                # Siempre retorna el tipo, para permitir asignaciones
+                return sym.type
         
             # filepath: c:\Repositorios\Analizador-Lexico-MiniPascal\semantic_miniPascal.py
             if tag == 'binop':

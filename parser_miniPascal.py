@@ -485,23 +485,6 @@ def p_expression_list(p):
     else:
         p[0] = [p[1]] + p[3]
 
-# Para rangos de arreglos o subrangos
-def p_index_spec(p):
-    '''index_spec : expression
-                  | NUMBER RANGE NUMBER'''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = ('subrange', p[1], p[3])
-
-def p_index_spec_list(p):
-    '''index_spec_list : index_spec
-                       | index_spec COMMA index_spec_list'''
-    if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        p[0] = [p[1]] + p[3]
-
 def p_expression(p):
     '''expression : simple_expression
                   | simple_expression relop simple_expression
@@ -579,12 +562,6 @@ def p_relop(p):
              | LE
              | GT
              | GE'''
-    p[0] = p[1]
-
-def p_unaryop(p):
-    '''unaryop : PLUS
-               | MINUS
-               | NOT'''
     p[0] = p[1]
 
 # Un factor puede ser un número, una variable o una expresión entre paréntesis.
